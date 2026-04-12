@@ -6,12 +6,15 @@ from app.db import leads as leads_db
 router = APIRouter()
 
 
-@router.get("/leads", response_model=List[LeadResponse])
+@router.get("/leads")
 async def get_all_leads():
     """Get all captured leads"""
     try:
         leads = leads_db.get_all_leads()
-        return leads
+        return {
+            "leads": leads,
+            "total": len(leads)
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

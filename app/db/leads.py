@@ -76,3 +76,36 @@ def lead_exists(conversation_id: str) -> bool:
     """Check if lead already exists for conversation"""
     lead = get_lead_by_conversation(conversation_id)
     return lead is not None
+
+
+def get_all_leads() -> List[Dict]:
+    """Get all leads"""
+    conn = get_pg_connection()
+    cur = conn.cursor()
+    
+    try:
+        cur.execute("""
+            SELECT id, conversation_id, email, name, intent, budget, metadata, captured_at
+            FROM leads
+            ORDER BY captured_at DESC
+        """)
+        
+        rows = cur.fetchall()
+        
+        leads = []
+        for row in rows:
+            leads.append({
+                'id': str(row[0]),
+                'conversation_id': str(row[1]),
+                'email': row[2],
+                'name': row[3],
+                'intent': row[4],
+                'budget': row[5],
+                'metadata': row[6],
+                'created_at': row[7].isoformat() if row[7] else None
+            })
+        
+        return leads
+    finally:
+        cur.close()
+        conn.close()
