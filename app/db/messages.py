@@ -1,25 +1,62 @@
 from typing import List, Dict
-from app.services.supabase_client import supabase
+from app.db.pg_direct import get_pg_connection
 from datetime import datetime
 
 
 def create_message(conversation_id: str, role: str, content: str) -> Dict:
     """Create a new message"""
-    data = {
-        'conversation_id': conversation_id,
-        'role': role,
-        'content': content,
-        'created_at': datetime.utcnow().isoformat()
-    }
+    conn = get_pg_connection()
+    cur = conn.cursor()
     
-    result = supabase.table('messages').insert(data).execute()
-    return result.data[0] if result.data else None
+    try:
+        cur.execute("""
+            INSERT INTO messages (conversation_id, role, content, created_at)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id, conversation_id, role, content, created_at
+        """, (conversation_id, role, content, datetime.utcnow()))
+        
+        row = cur.fetchone()
+        conn.commit()
+        
+        return {
+            'id': str(row[0]),
+            'conversation_id': str(row[1]),
+            'role': row[2],
+            'content': row[3],
+            'created_at': row[4].isoformat()
+        }
+    finally:
+        cur.close()
+        conn.close()
 
 
 def get_conversation_messages(conversation_id: str) -> List[Dict]:
     """Get all messages for a conversation"""
-    result = supabase.table('messages').select('*').eq('conversation_id', conversation_id).order('created_at').execute()
-    return result.data if result.data else []
+    conn = get_pg_connection()
+    cur = conn.cursor()
+    
+    try:
+        cur.execute("""
+            SELECT id, conversation_id, role, content, created_at
+            FROM messages
+            WHERE conversation_id = %s
+            ORDER BY created_at
+        """, (conversation_id,))
+        
+        rows = cur.fetchall()
+        messages = []
+        for row in rows:
+            messages.append({
+                'id': str(row[0]),
+                'conversation_id': str(row[1]),
+                'role': row[2],
+                'content': row[3],
+                'created_at': row[4].isoformat()
+            })
+        return messages
+    finally:
+        cur.close()
+        conn.close()
 
 
 def get_conversation_history(conversation_id: str, limit: int = 10) -> List[Dict[str, str]]:
@@ -42,5 +79,17 @@ def get_conversation_history(conversation_id: str, limit: int = 10) -> List[Dict
 
 def count_user_messages(conversation_id: str) -> int:
     """Count user messages in conversation"""
-    result = supabase.table('messages').select('id', count='exact').eq('conversation_id', conversation_id).eq('role', 'user').execute()
-    return result.count if hasattr(result, 'count') else 0
+    conn = get_pg_connection()
+    cur = conn.cursor()
+    
+    try:
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM messages
+            WHERE conversation_id = %s AND role = 'user'
+        """, (conversation_id,))
+        
+        return cur.fetchone()[0]
+    finally:
+        cur.close()
+        conn.close()

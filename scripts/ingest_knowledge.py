@@ -1,21 +1,22 @@
 """
 Script to ingest business knowledge into the database.
-Run this once to load your business data.
 """
 
 import sys
-sys.path.append('..')
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.core.embeddings import embedding_service
-from app.db.knowledge_base import insert_documents_batch, count_documents
+from app.db.knowledge_base import count_documents
+from app.db.pg_direct import insert_vectors_direct
 from app.utils.text_processing import chunk_text, clean_text
 from typing import List, Dict
 
 
 def load_sample_knowledge():
-    """Load sample business knowledge (replace with your actual data)"""
+    """Load sample business knowledge"""
     
-    # Sample business data - REPLACE THIS WITH YOUR ACTUAL CONTENT
     business_data = [
         {
             "content": """
@@ -90,22 +91,24 @@ def ingest_knowledge(data: List[Dict]):
     documents_to_insert = []
     
     for item in data:
-        # Clean text
         content = clean_text(item['content'])
         
-        # Chunk if too long (optional, depends on your content)
         if len(content.split()) > 300:
             chunks = chunk_text(content, chunk_size=200, overlap=30)
         else:
             chunks = [content]
         
-        # Generate embeddings for each chunk
         for chunk in chunks:
             embedding = embedding_service.embed_text(chunk)
             
+            if isinstance(embedding, list):
+                embedding_list = embedding
+            else:
+                embedding_list = embedding.tolist()
+            
             documents_to_insert.append({
                 'content': chunk,
-                'embedding': embedding,
+                'embedding': embedding_list,
                 'metadata': {
                     'source': item.get('source', 'Unknown'),
                     'category': item.get('category', 'general')
@@ -115,16 +118,10 @@ def ingest_knowledge(data: List[Dict]):
     
     print(f"📝 Inserting {len(documents_to_insert)} documents...")
     
-    # Insert in batches
-    batch_size = 10
-    for i in range(0, len(documents_to_insert), batch_size):
-        batch = documents_to_insert[i:i + batch_size]
-        insert_documents_batch(batch)
-        print(f"✅ Inserted batch {i//batch_size + 1}")
+    insert_vectors_direct(documents_to_insert)
     
     print(f"✅ Successfully ingested {len(documents_to_insert)} documents!")
     
-    # Verify
     total = count_documents()
     print(f"📊 Total documents in knowledge base: {total}")
 
@@ -133,17 +130,10 @@ def main():
     """Main ingestion function"""
     print("🚀 Starting knowledge ingestion...")
     
-    # Load your business data
     data = load_sample_knowledge()
-    
-    # Ingest into database
     ingest_knowledge(data)
     
     print("✅ Knowledge ingestion complete!")
-    print("\n💡 Next steps:")
-    print("1. Run the API: uvicorn main:app --reload")
-    print("2. Test the chat endpoint")
-    print("3. Replace sample data with your actual business content")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 from typing import List, Dict, Optional
 from app.services.supabase_client import supabase
+import json
 
 
 def insert_document(content: str, embedding: List[float], metadata: Dict = None, source: str = None) -> Dict:
@@ -17,6 +18,12 @@ def insert_document(content: str, embedding: List[float], metadata: Dict = None,
 
 def insert_documents_batch(documents: List[Dict]) -> List[Dict]:
     """Insert multiple documents at once"""
+    # Convert embeddings to proper format for pgvector
+    for doc in documents:
+        if 'embedding' in doc and isinstance(doc['embedding'], list):
+            # Convert list to PostgreSQL array format: [1,2,3]
+            doc['embedding'] = json.dumps(doc['embedding'])
+    
     result = supabase.table('knowledge_base').insert(documents).execute()
     return result.data if result.data else []
 

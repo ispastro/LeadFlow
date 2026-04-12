@@ -35,29 +35,22 @@ class ConversationService:
         
         return ConversationState.ANSWERING
     
-    def get_system_prompt(self, state: ConversationState, context: str = "") -> str:
-        """Get system prompt based on conversation state"""
-        
-        base_context = f"""You are a helpful AI sales and support agent.
-
-Context about the business:
-{context}
-
-"""
+    def get_state_instructions(self, state: ConversationState) -> str:
+        """Get additional instructions based on conversation state"""
         
         if state == ConversationState.GREETING:
-            return base_context + """This is the first interaction. Greet the user warmly and ask how you can help."""
+            return "This is the first interaction. Greet the user warmly and ask how you can help."
         
         elif state == ConversationState.ANSWERING:
-            return base_context + """Answer the user's questions accurately and helpfully based on the context provided."""
+            return "Answer the user's questions accurately and helpfully."
         
         elif state == ConversationState.QUALIFYING:
-            return base_context + """The user seems interested. After answering their question, naturally ask for their contact information (name and email) so you can follow up."""
+            return "The user seems interested. After answering their question, naturally ask for their contact information (name and email) so you can follow up."
         
         elif state == ConversationState.CAPTURED:
-            return base_context + """Lead information has been captured. Continue being helpful and answer any remaining questions."""
+            return "Lead information has been captured. Continue being helpful and answer any remaining questions."
         
-        return base_context
+        return ""
 
 
 # Singleton instance

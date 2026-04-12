@@ -1,6 +1,6 @@
 from typing import List, Dict
 from app.core.embeddings import embedding_service
-from app.services.supabase_client import supabase
+from app.db.pg_direct import test_vector_search_direct
 from app.services.groq_client import groq_service
 
 
@@ -10,35 +10,22 @@ class RAGService:
         self,
         query: str,
         top_k: int = 3,
-        similarity_threshold: float = 0.7
+        similarity_threshold: float = 0.5
     ) -> List[Dict]:
         """Retrieve relevant documents from knowledge base"""
-        # Generate query embedding
         query_embedding = embedding_service.embed_text(query)
-        
-        # Search in Supabase using pgvector
-        result = supabase.rpc(
-            'match_documents',
-            {
-                'query_embedding': query_embedding,
-                'match_count': top_k,
-                'match_threshold': similarity_threshold
-            }
-        ).execute()
-        
-        return result.data if result.data else []
+        docs = test_vector_search_direct(query_embedding, top_k=top_k)
+        return docs
     
     def generate_response(
         self,
         user_message: str,
         conversation_history: List[Dict[str, str]] = None,
-        system_prompt: str = None
+        additional_instructions: str = ""
     ) -> str:
         """Generate AI response using RAG"""
-        # Retrieve relevant context
         context_docs = self.retrieve_context(user_message)
         
-        # Build context string
         if context_docs:
             context = "\n\n".join([
                 f"[Source: {doc.get('metadata', {}).get('source', 'Unknown')}]\n{doc['content']}"
@@ -47,33 +34,35 @@ class RAGService:
         else:
             context = "No specific context found in knowledge base."
         
-        # Build system prompt with context
-        if not system_prompt:
-            system_prompt = f"""You are a helpful AI sales and support agent. 
-Use the following context to answer questions accurately.
+        system_prompt = f"""You are a helpful AI sales and support agent.
 
-Context:
+CRITICAL INSTRUCTIONS:
+1. You MUST answer ONLY using the information in the context below
+2. DO NOT make up prices, features, or any information
+3. If the context doesn't contain the answer, say "I don't have that information"
+4. NEVER invent pricing - use ONLY what's in the context
+
+=== CONTEXT (USE ONLY THIS INFORMATION) ===
 {context}
+=== END OF CONTEXT ===
 
-Instructions:
-- Answer based on the context provided
-- Be helpful, professional, and concise
-- If you don't know something, say so
-- Guide users toward providing their contact information naturally
+Rules:
+- Answer based STRICTLY on the context above
+- Be helpful and professional
+- If asked about pricing, use ONLY the prices from the context
+- Do not add information not in the context
+
+{additional_instructions}
 """
         
-        # Build messages
         messages = [{"role": "system", "content": system_prompt}]
         
-        # Add conversation history
         if conversation_history:
             messages.extend(conversation_history)
         
-        # Add current user message
         messages.append({"role": "user", "content": user_message})
         
-        # Generate response
-        response = groq_service.chat_completion(messages)
+        response = groq_service.chat_completion(messages, temperature=0.3)
         
         return response
 

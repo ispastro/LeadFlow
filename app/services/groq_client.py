@@ -16,7 +16,7 @@ class GroqService:
     def chat_completion(
         self,
         messages: List[Dict[str, str]],
-        model: str = "llama-3.1-70b-versatile",
+        model: str = "llama-3.3-70b-versatile",
         temperature: float = 0.7,
         max_tokens: int = 1024
     ) -> str:
@@ -32,7 +32,7 @@ class GroqService:
     def chat_completion_stream(
         self,
         messages: List[Dict[str, str]],
-        model: str = "llama-3.1-70b-versatile",
+        model: str = "llama-3.3-70b-versatile",
         temperature: float = 0.7,
         max_tokens: int = 1024
     ):

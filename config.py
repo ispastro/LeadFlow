@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_key: str
     supabase_db_url: str
+    database_url: str = None  # Optional alias
     
     # Groq
     groq_api_key: str

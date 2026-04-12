@@ -9,7 +9,6 @@ class EmbeddingService:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            # Load model once at startup
             print("Loading Sentence Transformer model...")
             cls._model = SentenceTransformer('all-MiniLM-L6-v2')
             print("Model loaded successfully!")
@@ -21,13 +20,13 @@ class EmbeddingService:
         return embedding.tolist()
     
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
-        """Generate embeddings for multiple texts (more efficient)"""
+        """Generate embeddings for multiple texts"""
         embeddings = self._model.encode(texts, convert_to_tensor=False)
         return [emb.tolist() for emb in embeddings]
     
     @property
     def dimension(self) -> int:
-        """Get embedding dimension (384 for all-MiniLM-L6-v2)"""
+        """Get embedding dimension"""
         return 384
 
 

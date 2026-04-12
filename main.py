@@ -31,7 +31,6 @@ async def startup_event():
     """Load models and initialize services on startup"""
     print("🚀 Starting AI Sales Agent API...")
     print("📦 Loading Sentence Transformer model...")
-    # This triggers model loading
     _ = embedding_service.dimension
     print("✅ Model loaded successfully!")
     print(f"🌐 CORS enabled for: {settings.origins_list}")
@@ -40,7 +39,6 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
     return {
         "message": "AI Sales & Support Agent API",
         "version": "1.0.0",
