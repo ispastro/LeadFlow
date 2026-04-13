@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from app.models.chat import ChatRequest, ChatResponse
 from app.core.rag import rag_service
 from app.core.lead_capture import lead_capture_service
@@ -7,12 +7,13 @@ from app.db import conversations as conv_db
 from app.db import messages as msg_db
 from app.db import leads as leads_db
 from app.utils.text_processing import extract_email, extract_name
+from app.services.email_service import email_service
 
 router = APIRouter()
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
     """Main chat endpoint"""
     try:
         conversation = conv_db.get_or_create_conversation(request.session_id)
@@ -38,7 +39,7 @@ async def chat(request: ChatRequest):
             email = email_in_message or request.user_email
             name = name_in_message or request.user_name
             
-            leads_db.create_lead(
+            lead_id = leads_db.create_lead(
                 conversation_id=conversation_id,
                 email=email,
                 name=name,
@@ -47,6 +48,17 @@ async def chat(request: ChatRequest):
             )
             lead_already_captured = True
             state = ConversationState.CAPTURED
+            
+            # Send email notification in background
+            background_tasks.add_task(
+                email_service.send_lead_notification,
+                lead_email=email,
+                lead_name=name,
+                intent=intent_data.get('intent'),
+                quality=intent_data.get('quality'),
+                conversation_id=conversation_id,
+                lead_id=lead_id
+            )
         
         history = msg_db.get_conversation_history(conversation_id, limit=6)
         

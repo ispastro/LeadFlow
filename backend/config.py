@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -19,6 +19,15 @@ class Settings(BaseSettings):
     
     # CORS
     allowed_origins: str = "http://localhost:3000,http://localhost:5173"
+    
+    # Email Notifications (Optional)
+    smtp_host: Optional[str] = "smtp.gmail.com"
+    smtp_port: Optional[int] = 587
+    smtp_user: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_email: Optional[str] = None
+    notification_emails: Optional[str] = None
+    dashboard_url: Optional[str] = "http://localhost:3001"
     
     class Config:
         env_file = ".env"
