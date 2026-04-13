@@ -347,8 +347,8 @@ MIT License - see [LICENSE](LICENSE) file for details
 ## 📞 Support
 
 - **Documentation**: See `/backend/EMAIL_SETUP.md`, `/backend/TESTING_EMAIL.md`
-- **Issues**: [GitHub Issues](https://github.com/yourusername/leadflow/issues)
-- **Email**: support@leadflow.com
+- **Issues**: [GitHub Issues](https://github.com/ispastro/LeadFlow/issues)
+- **Email**: haileasaye@gmail.com
 
 ---
 
