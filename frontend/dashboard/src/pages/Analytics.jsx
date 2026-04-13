@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../services/api'
-import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 function Analytics() {
   const [data, setData] = useState(null)
@@ -125,60 +125,63 @@ function Analytics() {
       {/* Lead Quality & Intent */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4 text-white">Lead Quality</h2>
+          <h2 className="text-lg font-semibold mb-6 text-white">Lead Quality</h2>
           {data.lead_quality.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={data.lead_quality}
-                  dataKey="count"
-                  nameKey="quality"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label={({ quality, count }) => `${quality}: ${count}`}
-                  labelStyle={{ fontSize: '12px', fill: '#a3a3a3' }}
-                >
-                  {data.lead_quality.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={['#22c55e', '#eab308', '#ef4444'][index % 3]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: '8px' }}
-                  itemStyle={{ color: '#ffffff' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {data.lead_quality.map((item, idx) => {
+                const total = data.lead_quality.reduce((sum, i) => sum + i.count, 0)
+                const percentage = ((item.count / total) * 100).toFixed(0)
+                const colors = {
+                  'HIGH': 'bg-green-500',
+                  'MEDIUM': 'bg-yellow-500',
+                  'LOW': 'bg-red-500',
+                  'UNKNOWN': 'bg-neutral-600'
+                }
+                return (
+                  <div key={idx}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-neutral-400">{item.quality}</span>
+                      <span className="text-sm font-medium text-white">{item.count}</span>
+                    </div>
+                    <div className="w-full bg-neutral-800 rounded-full h-2">
+                      <div 
+                        className={`${colors[item.quality] || 'bg-neutral-600'} h-2 rounded-full transition-all`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           ) : (
             <p className="text-sm text-neutral-500 text-center py-8">No data yet</p>
           )}
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4 text-white">Intent Breakdown</h2>
+          <h2 className="text-lg font-semibold mb-6 text-white">Intent Breakdown</h2>
           {data.intent_breakdown.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={data.intent_breakdown}
-                  dataKey="count"
-                  nameKey="intent"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label={({ intent, count }) => `${intent.replace(/_/g, ' ')}: ${count}`}
-                  labelStyle={{ fontSize: '12px', fill: '#a3a3a3' }}
-                >
-                  {data.intent_breakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#a855f7', '#ec4899', '#f59e0b'][index % 4]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: '8px' }}
-                  itemStyle={{ color: '#ffffff' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {data.intent_breakdown.map((item, idx) => {
+                const total = data.intent_breakdown.reduce((sum, i) => sum + i.count, 0)
+                const percentage = ((item.count / total) * 100).toFixed(0)
+                const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500']
+                return (
+                  <div key={idx}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-neutral-400">{item.intent.replace(/_/g, ' ')}</span>
+                      <span className="text-sm font-medium text-white">{item.count}</span>
+                    </div>
+                    <div className="w-full bg-neutral-800 rounded-full h-2">
+                      <div 
+                        className={`${colors[idx % colors.length]} h-2 rounded-full transition-all`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           ) : (
             <p className="text-sm text-neutral-500 text-center py-8">No data yet</p>
           )}
