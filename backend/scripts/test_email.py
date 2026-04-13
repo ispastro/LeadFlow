@@ -14,8 +14,9 @@ load_dotenv()
 
 def test_email_notification():
     """Send test email notification"""
-    # Force reload configuration
-    email_service._load_config()
+    # Configure from settings
+    from config import settings
+    email_service.configure(settings)
     
     print("Testing email notification system...")
     print(f"SMTP Host: {email_service.smtp_host}")

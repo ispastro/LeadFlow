@@ -10,29 +10,25 @@ logger = logging.getLogger(__name__)
 
 
 class EmailService:
-    _instance = None
-    
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-    
     def __init__(self):
-        if self._initialized:
-            return
-        self._initialized = True
-        self._load_config()
+        self.smtp_host = None
+        self.smtp_port = None
+        self.smtp_user = None
+        self.smtp_password = None
+        self.from_email = None
+        self.notification_recipients = []
+        self.enabled = False
     
-    def _load_config(self):
-        """Load configuration from environment variables"""
-        self.smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-        self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
-        self.smtp_user = os.getenv("SMTP_USER")
-        self.smtp_password = os.getenv("SMTP_PASSWORD")
-        self.from_email = os.getenv("SMTP_FROM_EMAIL", self.smtp_user)
-        self.notification_recipients = os.getenv("NOTIFICATION_EMAILS", "").split(",")
-        self.enabled = bool(self.smtp_user and self.smtp_password and self.notification_recipients[0])
+    def configure(self, settings):
+        """Configure email service from settings object"""
+        self.smtp_host = settings.smtp_host
+        self.smtp_port = settings.smtp_port
+        self.smtp_user = settings.smtp_user
+        self.smtp_password = settings.smtp_password
+        self.from_email = settings.smtp_from_email or settings.smtp_user
+        self.notification_recipients = settings.notification_emails.split(",") if settings.notification_emails else []
+        self.enabled = bool(self.smtp_user and self.smtp_password and self.notification_recipients and self.notification_recipients[0])
+        self.dashboard_url = settings.dashboard_url
 
     def send_lead_notification(
         self,
@@ -83,8 +79,7 @@ class EmailService:
         quality_emoji = {"hot": "🔥", "warm": "⚡", "cold": "❄️"}.get(quality, "📊")
         quality_color = {"hot": "#ef4444", "warm": "#f59e0b", "cold": "#3b82f6"}.get(quality, "#6b7280")
         
-        dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:3001")
-        conversation_url = f"{dashboard_url}/conversations?id={conversation_id}"
+        conversation_url = f"{self.dashboard_url}/conversations?id={conversation_id}"
 
         return f"""
 <!DOCTYPE html>

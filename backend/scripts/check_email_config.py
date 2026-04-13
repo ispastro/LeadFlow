@@ -14,8 +14,9 @@ load_dotenv()
 
 def check_config():
     """Check email configuration"""
-    # Force reload configuration
-    email_service._load_config()
+    # Configure from settings
+    from config import settings
+    email_service.configure(settings)
     
     print("=" * 60)
     print("EMAIL CONFIGURATION CHECK")

@@ -34,13 +34,18 @@ class RAGService:
         else:
             context = "No specific context found in knowledge base."
         
+        # Build system prompt with lead capture instructions integrated
+        lead_capture_note = ""
+        if "MUST ask for their contact information" in additional_instructions:
+            lead_capture_note = "\n\nIMPORTANT LEAD CAPTURE: After answering the user's question, you MUST ask for their email address to proceed. Use a natural transition like: 'To get you started, what's your email address?' or 'Great! I'll need your email to send you the details.'"
+        
         system_prompt = f"""You are a helpful AI sales and support agent.
 
 CRITICAL INSTRUCTIONS:
 1. You MUST answer ONLY using the information in the context below
 2. DO NOT make up prices, features, or any information
 3. If the context doesn't contain the answer, say "I don't have that information"
-4. NEVER invent pricing - use ONLY what's in the context
+4. NEVER invent pricing - use ONLY what's in the context{lead_capture_note}
 
 === CONTEXT (USE ONLY THIS INFORMATION) ===
 {context}
@@ -51,8 +56,6 @@ Rules:
 - Be helpful and professional
 - If asked about pricing, use ONLY the prices from the context
 - Do not add information not in the context
-
-{additional_instructions}
 """
         
         messages = [{"role": "system", "content": system_prompt}]

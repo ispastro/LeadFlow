@@ -45,7 +45,15 @@ class ConversationService:
             return "Answer the user's questions accurately and helpfully."
         
         elif state == ConversationState.QUALIFYING:
-            return "The user seems interested. After answering their question, naturally ask for their contact information (name and email) so you can follow up."
+            return """IMPORTANT: The user is interested. After answering their question, you MUST ask for their contact information.
+            
+Use one of these natural transitions:
+- "I'd love to help you get started! What's your email address so I can send you the setup details?"
+- "Great! To proceed with your Professional plan signup, I'll need your email address."
+- "Perfect! Let me get your email so I can send you the trial access and setup instructions."
+- "To create your account, I'll need your email address. What's the best email to use?"
+
+DO NOT end the conversation without asking for their email."""
         
         elif state == ConversationState.CAPTURED:
             return "Lead information has been captured. Continue being helpful and answer any remaining questions."

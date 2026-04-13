@@ -39,6 +39,14 @@ async def startup_event():
     print("✅ Model loaded successfully!")
     print(f"🌐 CORS enabled for: {settings.origins_list}")
     print(f"🔧 Environment: {settings.environment}")
+    
+    # Configure email service
+    from app.services.email_service import email_service
+    email_service.configure(settings)
+    if email_service.enabled:
+        print(f"📧 Email notifications enabled: {email_service.notification_recipients}")
+    else:
+        print("⚠️  Email notifications disabled (not configured)")
 
 
 @app.get("/")
