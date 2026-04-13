@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from app.api import chat, leads, health, knowledge, analytics
+from app.api import chat, leads, health, knowledge, analytics, conversations
 from app.core.embeddings import embedding_service
 
 # Initialize FastAPI app
@@ -27,6 +27,7 @@ app.include_router(chat.router, prefix="/api", tags=["Chat"])
 app.include_router(leads.router, prefix="/api", tags=["Leads"])
 app.include_router(knowledge.router, prefix="/api", tags=["Knowledge"])
 app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
+app.include_router(conversations.router, prefix="/api", tags=["Conversations"])
 
 
 @app.on_event("startup")
