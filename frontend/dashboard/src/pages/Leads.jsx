@@ -28,6 +28,37 @@ function Leads() {
     })
   }
 
+  const exportToCSV = () => {
+    if (leads.length === 0) return
+
+    const headers = ['Name', 'Email', 'Intent', 'Budget', 'Quality', 'Date']
+    const rows = leads.map(lead => [
+      lead.name || 'Anonymous',
+      lead.email,
+      lead.intent || 'Unknown',
+      lead.budget || 'N/A',
+      lead.metadata?.quality || 'Unknown',
+      formatDate(lead.captured_at || lead.created_at)
+    ])
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `leadflow-leads-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   if (loading) {
     return (
       <div className="max-w-6xl">
@@ -72,8 +103,12 @@ function Leads() {
           <h1 className="text-2xl font-semibold mb-1 text-white">Leads</h1>
           <p className="text-sm text-neutral-400">{leads.length} total leads</p>
         </div>
-        <button className="px-4 py-2 bg-white text-black text-sm font-medium rounded-md hover:bg-neutral-200 transition-colors">
-          Export
+        <button 
+          onClick={exportToCSV}
+          disabled={leads.length === 0}
+          className="px-4 py-2 bg-white text-black text-sm font-medium rounded-md hover:bg-neutral-200 transition-colors disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed"
+        >
+          Export CSV
         </button>
       </div>
 
