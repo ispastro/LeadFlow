@@ -8,6 +8,7 @@ function Sidebar() {
     { path: '/leads', label: 'Leads' },
     { path: '/conversations', label: 'Conversations' },
     { path: '/knowledge', label: 'Knowledge' },
+    { path: '/analytics', label: 'Analytics' },
     { path: '/settings', label: 'Settings' }
   ]
 

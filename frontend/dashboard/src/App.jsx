@@ -5,6 +5,7 @@ import Leads from './pages/Leads'
 import Conversations from './pages/Conversations'
 import Knowledge from './pages/Knowledge'
 import Settings from './pages/Settings'
+import Analytics from './pages/Analytics'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/leads" element={<Leads />} />
             <Route path="/conversations" element={<Conversations />} />
             <Route path="/knowledge" element={<Knowledge />} />
+            <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
