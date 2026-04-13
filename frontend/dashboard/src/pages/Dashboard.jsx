@@ -43,7 +43,7 @@ function Dashboard() {
           <div className="h-4 w-64 bg-neutral-800 rounded skeleton"></div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
               <div className="h-4 w-24 bg-neutral-800 rounded skeleton mb-3"></div>
@@ -75,7 +75,7 @@ function Dashboard() {
         <p className="text-sm text-neutral-400">Welcome back to LeadFlow</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 hover:border-neutral-700 transition-colors">
           <p className="text-sm text-neutral-400 mb-1">Total Leads</p>
           <p className="text-3xl font-semibold text-white">{stats.totalLeads}</p>

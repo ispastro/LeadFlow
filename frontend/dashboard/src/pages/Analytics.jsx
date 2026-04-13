@@ -70,7 +70,7 @@ function Analytics() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 hover:border-neutral-700 transition-colors">
           <p className="text-sm text-neutral-400 mb-1">Conversations</p>
           <p className="text-3xl font-semibold text-white">{data.overview.total_conversations}</p>
@@ -123,7 +123,7 @@ function Analytics() {
       </div>
 
       {/* Lead Quality & Intent */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-6 text-white">Lead Quality</h2>
           {data.lead_quality.length > 0 ? (

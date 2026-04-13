@@ -12,7 +12,7 @@ function App() {
     <BrowserRouter>
       <div className="flex min-h-screen bg-black relative">
         <Sidebar />
-        <main className="ml-64 flex-1 p-12 relative z-10">
+        <main className="lg:ml-64 flex-1 p-6 lg:p-12 relative z-10">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/leads" element={<Leads />} />

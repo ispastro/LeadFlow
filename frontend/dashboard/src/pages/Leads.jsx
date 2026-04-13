@@ -118,8 +118,8 @@ function Leads() {
           <p className="text-xs text-neutral-500 mt-1">Leads will appear here once visitors chat with your AI</p>
         </div>
       ) : (
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden">
-          <table className="w-full">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-x-auto">
+          <table className="w-full min-w-[600px]">
             <thead className="border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400">Name</th>
