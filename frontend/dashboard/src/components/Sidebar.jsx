@@ -16,10 +16,11 @@ function Sidebar() {
     <div className="w-64 h-screen fixed left-0 top-0 bg-black border-r border-neutral-800">
       <div className="h-16 flex items-center px-6 border-b border-neutral-800">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-white rounded-md flex items-center justify-center">
-            <span className="text-black text-xs font-bold">L</span>
-          </div>
-          <span className="font-semibold text-sm text-white">LeadFlow</span>
+          <img src="/leadflow.png" alt="LeadFlow" className="w-6 h-6 rounded-md" />
+          <span className="font-semibold text-sm text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <span className="font-medium">Lead</span>
+            <span className="font-semibold" style={{ letterSpacing: '-0.02em' }}>Flow</span>
+          </span>
         </div>
       </div>
 
