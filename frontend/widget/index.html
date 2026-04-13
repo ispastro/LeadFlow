@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadFlow Chat Widget</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000000;
+      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Radial gradients */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    /* Grid pattern */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(64, 64, 64, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(64, 64, 64, 0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .content {
+      position: relative;
+      z-index: 1;
+      padding: 80px 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #ffffff;
+      font-size: 48px;
+      font-weight: 600;
+      margin: 0 0 16px 0;
+      letter-spacing: -0.02em;
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+    }
+    
+    p {
+      color: #a3a3a3;
+      font-size: 18px;
+      line-height: 1.6;
+      margin: 0;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="badge">✨ Live Demo</div>
+    <h1>AI-Powered Sales Agent</h1>
+    <p>
+      Experience intelligent conversations that convert visitors into leads. Our AI agent understands context, answers questions instantly, and captures qualified leads 24/7.
+    </p>
+  </div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
