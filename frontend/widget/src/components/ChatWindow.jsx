@@ -131,15 +131,17 @@ function ChatWindow({ apiUrl, sessionId, onClose }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 px-4 py-2.5 bg-black border border-neutral-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 text-sm text-white placeholder-neutral-500 transition-all"
+            className="flex-1 px-4 py-2.5 bg-black border border-neutral-800 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 focus:border-neutral-600 text-sm text-white placeholder-neutral-500 transition-all"
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-5 py-2.5 bg-white hover:bg-neutral-100 disabled:bg-neutral-800 disabled:text-neutral-500 text-black rounded-lg transition-all font-medium text-sm disabled:cursor-not-allowed"
+            className="px-4 py-2.5 bg-white hover:bg-neutral-100 disabled:bg-neutral-800 disabled:text-neutral-500 text-black rounded-md transition-all font-medium text-sm disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Send
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
           </button>
         </div>
       </form>
