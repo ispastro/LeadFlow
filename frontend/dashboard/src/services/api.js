@@ -51,5 +51,17 @@ export const api = {
     const response = await fetch(`${API_URL}/api/analytics?days=${days}`)
     if (!response.ok) throw new Error('Failed to fetch analytics')
     return response.json()
+  },
+
+  async getConversations() {
+    const response = await fetch(`${API_URL}/api/conversations`)
+    if (!response.ok) throw new Error('Failed to fetch conversations')
+    return response.json()
+  },
+
+  async getConversation(id) {
+    const response = await fetch(`${API_URL}/api/conversations/${id}`)
+    if (!response.ok) throw new Error('Failed to fetch conversation')
+    return response.json()
   }
 }
