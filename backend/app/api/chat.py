@@ -15,11 +15,8 @@ router = APIRouter()
 async def chat(request: ChatRequest):
     """Main chat endpoint"""
     try:
-        print(f"[DEBUG] Received chat request: {request.message}")
-        
         conversation = conv_db.get_or_create_conversation(request.session_id)
         conversation_id = conversation['id']
-        print(f"[DEBUG] Conversation ID: {conversation_id}")
         
         lead_already_captured = leads_db.lead_exists(conversation_id)
         message_count = msg_db.count_user_messages(conversation_id)
@@ -27,7 +24,6 @@ async def chat(request: ChatRequest):
         msg_db.create_message(conversation_id, 'user', request.message)
         
         intent_data = lead_capture_service.detect_intent(request.message)
-        print(f"[DEBUG] Intent detected: {intent_data}")
         
         state = conversation_service.get_state(
             message_count,
@@ -53,14 +49,12 @@ async def chat(request: ChatRequest):
             state = ConversationState.CAPTURED
         
         history = msg_db.get_conversation_history(conversation_id, limit=6)
-        print(f"[DEBUG] Generating AI response...")
         
         ai_response = rag_service.generate_response(
             user_message=request.message,
             conversation_history=history[:-1],
             additional_instructions=conversation_service.get_state_instructions(state)
         )
-        print(f"[DEBUG] AI response generated: {ai_response[:100]}...")
         
         msg_db.create_message(conversation_id, 'assistant', ai_response)
         conv_db.update_conversation_timestamp(conversation_id)
@@ -80,7 +74,4 @@ async def chat(request: ChatRequest):
         )
         
     except Exception as e:
-        print(f"[ERROR] Chat endpoint error: {str(e)}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error processing chat: {str(e)}")
