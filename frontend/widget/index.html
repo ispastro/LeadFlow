@@ -78,24 +78,36 @@
     }
     
     .badge {
-      display: inline-block;
-      padding: 6px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
+      border-radius: 8px;
       color: #ffffff;
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 24px;
       backdrop-filter: blur(10px);
     }
+    
+    .badge img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="grid-bg"></div>
   <div class="content">
-    <div class="badge">✨ Live Demo</div>
-    <h1>AI Sales Agent , Always On</h1>
+    <div class="badge">
+      <img src="/leadflow.png" alt="LeadFlow" />
+      <span>Live Demo</span>
+    </div>
+    <h1>AI Sales Agent, Always On</h1>
     <p>
       Engage visitors instantly, answer questions intelligently, and capture leads automatically—24/7.
     </p>
