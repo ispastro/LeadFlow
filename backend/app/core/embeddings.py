@@ -9,7 +9,7 @@ class EmbeddingService:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            print("Loading Sentence Transformer model...")
+            print("Loading Sentence Transformer model (all-MiniLM-L6-v2)...")
             cls._model = SentenceTransformer('all-MiniLM-L6-v2')
             print("Model loaded successfully!")
         return cls._instance
@@ -27,7 +27,7 @@ class EmbeddingService:
     @property
     def dimension(self) -> int:
         """Get embedding dimension"""
-        return 384
+        return 384  # all-MiniLM-L6-v2 dimension
 
 
 # Singleton instance
