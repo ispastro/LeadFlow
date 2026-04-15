@@ -1,6 +1,13 @@
-# Markdown and text files
-*.md
-*.txt
+# Review and analysis documentation (exclude from git)
+ENGINEERING_ANALYSIS.md
+CRITICAL_FIXES.md
+PRODUCTION_DEPLOYMENT.md
+REVIEW_SUMMARY.md
+QUICK_REFERENCE.md
+INDEX.md
+
+# Commit messages
+COMMIT_MESSAGE.txt
 
 # Python
 __pycache__/

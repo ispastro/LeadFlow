@@ -11,26 +11,32 @@ class AnalyticsService:
         cur = conn.cursor()
         
         try:
-            # Total conversations
-            cur.execute("SELECT COUNT(*) FROM conversations WHERE created_at >= NOW() - INTERVAL '%s days'" % days)
+            # Total conversations - FIXED: Using parameterized query
+            cur.execute(
+                "SELECT COUNT(*) FROM conversations WHERE created_at >= NOW() - INTERVAL %s",
+                (f"{days} days",)
+            )
             total_conversations = cur.fetchone()[0]
             
-            # Total leads
-            cur.execute("SELECT COUNT(*) FROM leads WHERE captured_at >= NOW() - INTERVAL '%s days'" % days)
+            # Total leads - FIXED: Using parameterized query
+            cur.execute(
+                "SELECT COUNT(*) FROM leads WHERE captured_at >= NOW() - INTERVAL %s",
+                (f"{days} days",)
+            )
             total_leads = cur.fetchone()[0]
             
             # Conversion rate
             conversion_rate = (total_leads / total_conversations * 100) if total_conversations > 0 else 0
             
-            # Average messages per conversation
+            # Average messages per conversation - FIXED: Using parameterized query
             cur.execute("""
                 SELECT AVG(message_count) FROM (
                     SELECT conversation_id, COUNT(*) as message_count 
                     FROM messages 
-                    WHERE created_at >= NOW() - INTERVAL '%s days'
+                    WHERE created_at >= NOW() - INTERVAL %s
                     GROUP BY conversation_id
                 ) as msg_counts
-            """ % days)
+            """, (f"{days} days",))
             avg_messages = cur.fetchone()[0] or 0
             
             return {
@@ -50,14 +56,15 @@ class AnalyticsService:
         cur = conn.cursor()
         
         try:
+            # FIXED: Using parameterized query
             cur.execute("""
                 SELECT 
                     metadata->>'quality' as quality,
                     COUNT(*) as count
                 FROM leads
-                WHERE captured_at >= NOW() - INTERVAL '%s days'
+                WHERE captured_at >= NOW() - INTERVAL %s
                 GROUP BY metadata->>'quality'
-            """ % days)
+            """, (f"{days} days",))
             
             results = cur.fetchall()
             return [
@@ -75,14 +82,15 @@ class AnalyticsService:
         cur = conn.cursor()
         
         try:
+            # FIXED: Using parameterized query
             cur.execute("""
                 SELECT 
                     intent,
                     COUNT(*) as count
                 FROM leads
-                WHERE captured_at >= NOW() - INTERVAL '%s days' AND intent IS NOT NULL
+                WHERE captured_at >= NOW() - INTERVAL %s AND intent IS NOT NULL
                 GROUP BY intent
-            """ % days)
+            """, (f"{days} days",))
             
             results = cur.fetchall()
             return [
@@ -100,32 +108,32 @@ class AnalyticsService:
         cur = conn.cursor()
         
         try:
-            # Conversations per day
+            # Conversations per day - FIXED: Using parameterized query
             cur.execute("""
                 SELECT 
                     DATE(created_at) as date,
                     COUNT(*) as count
                 FROM conversations
-                WHERE created_at >= NOW() - INTERVAL '%s days'
+                WHERE created_at >= NOW() - INTERVAL %s
                 GROUP BY DATE(created_at)
                 ORDER BY date
-            """ % days)
+            """, (f"{days} days",))
             
             conversations_data = [
                 {'date': row[0].isoformat(), 'count': row[1]}
                 for row in cur.fetchall()
             ]
             
-            # Leads per day
+            # Leads per day - FIXED: Using parameterized query
             cur.execute("""
                 SELECT 
                     DATE(captured_at) as date,
                     COUNT(*) as count
                 FROM leads
-                WHERE captured_at >= NOW() - INTERVAL '%s days'
+                WHERE captured_at >= NOW() - INTERVAL %s
                 GROUP BY DATE(captured_at)
                 ORDER BY date
-            """ % days)
+            """, (f"{days} days",))
             
             leads_data = [
                 {'date': row[0].isoformat(), 'count': row[1]}
