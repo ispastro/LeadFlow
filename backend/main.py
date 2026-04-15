@@ -14,10 +14,10 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=settings.origins_list,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
     expose_headers=["*"]
 )
 
@@ -34,6 +34,12 @@ app.include_router(conversations.router, prefix="/api", tags=["Conversations"])
 async def startup_event():
     """Load models and initialize services on startup"""
     print("🚀 Starting AI Sales Agent API...")
+    
+    # Initialize database connection pool
+    from app.db.pg_direct import initialize_pool
+    initialize_pool(minconn=2, maxconn=10)
+    print("✅ Database connection pool initialized (2-10 connections)")
+    
     print("📦 Loading Sentence Transformer model...")
     _ = embedding_service.dimension
     print("✅ Model loaded successfully!")
@@ -47,6 +53,14 @@ async def startup_event():
         print(f"📧 Email notifications enabled: {email_service.notification_recipients}")
     else:
         print("⚠️  Email notifications disabled (not configured)")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up resources on shutdown"""
+    from app.db.pg_direct import close_pool
+    close_pool()
+    print("✅ Database connection pool closed")
 
 
 @app.get("/")
