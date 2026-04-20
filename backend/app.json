@@ -6,8 +6,8 @@
   "keywords": ["fastapi", "ai", "sales", "lead-generation", "rag", "chatbot"],
   "stack": "container",
   "env": {
-    "SUPABASE_DB_URL": {
-      "description": "PostgreSQL database URL (Supabase or Heroku Postgres)",
+    "DATABASE_URL": {
+      "description": "PostgreSQL database URL",
       "required": true
     },
     "GROQ_API_KEY": {

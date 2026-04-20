@@ -3,11 +3,8 @@ from typing import List, Optional
 
 
 class Settings(BaseSettings):
-    # Supabase
-    supabase_url: str
-    supabase_key: str
-    supabase_db_url: str
-    database_url: str = None  # Optional alias
+    # Database
+    database_url: str  # PostgreSQL database URL
     
     # Groq
     groq_api_key: str

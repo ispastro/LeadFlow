@@ -26,7 +26,7 @@ def initialize_pool(minconn=2, maxconn=10):
             _connection_pool = psycopg2.pool.ThreadedConnectionPool(
                 minconn=minconn,
                 maxconn=maxconn,
-                dsn=settings.supabase_db_url,
+                dsn=settings.database_url,
                 keepalives=1,
                 keepalives_idle=30,
                 keepalives_interval=10,
@@ -72,7 +72,7 @@ def get_db_connection():
     
     # If pool still doesn't exist (DB unavailable), create direct connection
     if _connection_pool is None:
-        conn = psycopg2.connect(settings.supabase_db_url)
+        conn = psycopg2.connect(settings.database_url)
         try:
             yield conn
         finally:
