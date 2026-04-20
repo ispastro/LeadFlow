@@ -51,7 +51,12 @@
     <div class="code-block">
       <code>
 &lt;link rel="stylesheet" href="https://your-widget.vercel.app/widget.css"&gt;<br>
-&lt;script src="https://your-widget.vercel.app/widget.iife.js"&gt;&lt;/script&gt;
+&lt;script src="https://your-widget.vercel.app/widget.iife.js"&gt;&lt;/script&gt;<br>
+&lt;script&gt;<br>
+&nbsp;&nbsp;window.LeadFlowWidget.init({<br>
+&nbsp;&nbsp;&nbsp;&nbsp;apiUrl: 'https://leadflow-backend-0457e7580588.herokuapp.com'<br>
+&nbsp;&nbsp;});<br>
+&lt;/script&gt;
       </code>
     </div>
     
@@ -62,5 +67,13 @@
 
   <div id="leadflow-widget"></div>
   <script src="/widget.iife.js"></script>
+  <script>
+    // Auto-initialize widget
+    if (window.LeadFlowWidget) {
+      window.LeadFlowWidget.init({
+        apiUrl: 'https://leadflow-backend-0457e7580588.herokuapp.com'
+      });
+    }
+  </script>
 </body>
 </html>
