@@ -14,11 +14,7 @@ app = FastAPI(
 # CORS middleware - Must be added BEFORE routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Dashboard
-        "http://localhost:3001",  # Widget
-        "http://localhost:5173"   # Widget (Vite default fallback)
-    ],
+    allow_origins=settings.origins_list,  # Use from config
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
