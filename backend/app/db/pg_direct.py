@@ -26,12 +26,17 @@ def initialize_pool(minconn=2, maxconn=10):
             _connection_pool = psycopg2.pool.ThreadedConnectionPool(
                 minconn=minconn,
                 maxconn=maxconn,
-                dsn=settings.supabase_db_url
+                dsn=settings.supabase_db_url,
+                keepalives=1,
+                keepalives_idle=30,
+                keepalives_interval=10,
+                keepalives_count=5
             )
             logger.info(f"✅ Database connection pool created ({minconn}-{maxconn} connections)")
         except Exception as e:
             logger.error(f"❌ Failed to create connection pool: {e}")
-            raise
+            logger.warning("⚠️  App will start without connection pool. Connections will be created on-demand.")
+            # Don't raise - let app start anyway
     
     return _connection_pool
 
@@ -53,7 +58,7 @@ atexit.register(close_pool)
 @contextmanager
 def get_db_connection():
     """
-    Context manager for database connections.
+    Context manager for database connections with health check.
     Automatically returns connection to pool when done.
     
     Usage:
@@ -65,11 +70,43 @@ def get_db_connection():
     if _connection_pool is None:
         initialize_pool()
     
-    conn = _connection_pool.getconn()
-    try:
-        yield conn
-    finally:
-        _connection_pool.putconn(conn)
+    # If pool still doesn't exist (DB unavailable), create direct connection
+    if _connection_pool is None:
+        conn = psycopg2.connect(settings.supabase_db_url)
+        try:
+            yield conn
+        finally:
+            conn.close()
+    else:
+        conn = None
+        try:
+            conn = _connection_pool.getconn()
+            
+            # Health check: test if connection is alive
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT 1")
+                cur.close()
+            except (psycopg2.OperationalError, psycopg2.InterfaceError):
+                # Connection is dead, close it and get a new one
+                try:
+                    conn.close()
+                except:
+                    pass
+                conn = _connection_pool.getconn()
+            
+            yield conn
+        except Exception as e:
+            # If connection fails, try to reconnect
+            if conn:
+                try:
+                    _connection_pool.putconn(conn, close=True)
+                except:
+                    pass
+            raise
+        finally:
+            if conn:
+                _connection_pool.putconn(conn)
 
 
 def get_pg_connection():

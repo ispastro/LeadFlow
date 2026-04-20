@@ -4,9 +4,14 @@ uvicorn[standard]>=0.27.0
 pydantic>=2.10.0
 pydantic-settings>=2.1.0
 
-# AI & Embeddings
+# AI
 groq>=0.4.1
-sentence-transformers>=2.3.1
+
+# Embeddings (lightweight, no torch dependency)
+fastembed>=0.2.0
+
+# Vector Database
+qdrant-client>=1.7.0
 
 # Database
 psycopg2-binary>=2.9.0

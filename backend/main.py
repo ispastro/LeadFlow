@@ -11,13 +11,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware
+# CORS middleware - Must be added BEFORE routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.origins_list,
+    allow_origins=[
+        "http://localhost:3000",  # Dashboard
+        "http://localhost:3001",  # Widget
+        "http://localhost:5173"   # Widget (Vite default fallback)
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
     expose_headers=["*"]
 )
 
@@ -32,7 +36,7 @@ app.include_router(conversations.router, prefix="/api", tags=["Conversations"])
 
 @app.on_event("startup")
 async def startup_event():
-    """Load models and initialize services on startup"""
+    """Initialize services on startup"""
     print("🚀 Starting AI Sales Agent API...")
     
     # Initialize database connection pool
@@ -40,11 +44,25 @@ async def startup_event():
     initialize_pool(minconn=2, maxconn=10)
     print("✅ Database connection pool initialized (2-10 connections)")
     
-    print("📦 Loading Sentence Transformer model...")
+    # Load FastEmbed model (lightweight, fast startup)
+    print("📦 Loading FastEmbed model...")
     _ = embedding_service.dimension
-    print("✅ Model loaded successfully!")
+    print("✅ FastEmbed loaded!")
+    
     print(f"🌐 CORS enabled for: {settings.origins_list}")
     print(f"🔧 Environment: {settings.environment}")
+    
+    # Check Qdrant
+    from app.services.qdrant_service import qdrant_service
+    if settings.qdrant_url and settings.qdrant_api_key:
+        qdrant_service.configure(settings.qdrant_url, settings.qdrant_api_key)
+        if qdrant_service.collection_exists():
+            count = qdrant_service.count_documents()
+            print(f"✅ Qdrant connected: {count} documents")
+        else:
+            print("⚠️  Qdrant collection not found. Run: python scripts/ingest_knowledge.py")
+    else:
+        print("⚠️  Qdrant credentials not configured")
     
     # Configure email service
     from app.services.email_service import email_service
@@ -75,6 +93,11 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+    import multiprocessing
+    
+    # Fix for Windows multiprocessing
+    multiprocessing.freeze_support()
+    
     uvicorn.run(
         "main:app",
         host=settings.host,

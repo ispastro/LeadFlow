@@ -1,17 +1,17 @@
-"""
-Script to ingest business knowledge into the database.
-"""
-
 import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from dotenv import load_dotenv
+load_dotenv()  # Load .env file
+
+from config import settings
 from app.core.embeddings import embedding_service
-from app.db.knowledge_base import count_documents
-from app.db.pg_direct import insert_vectors_direct
+from app.services.qdrant_service import qdrant_service
 from app.utils.text_processing import chunk_text, clean_text
 from typing import List, Dict
+import uuid
 
 
 def load_sample_knowledge():
@@ -84,7 +84,7 @@ def load_sample_knowledge():
 
 
 def ingest_knowledge(data: List[Dict]):
-    """Process and ingest knowledge into database"""
+    """Process and ingest knowledge to Qdrant"""
     
     print("🔄 Processing business knowledge...")
     
@@ -99,36 +99,44 @@ def ingest_knowledge(data: List[Dict]):
             chunks = [content]
         
         for chunk in chunks:
+            # Generate embedding with FastEmbed
             embedding = embedding_service.embed_text(chunk)
             
-            if isinstance(embedding, list):
-                embedding_list = embedding
-            else:
-                embedding_list = embedding.tolist()
-            
-            documents_to_insert.append({
+            doc = {
+                'id': str(uuid.uuid4()),
                 'content': chunk,
-                'embedding': embedding_list,
-                'metadata': {
-                    'source': item.get('source', 'Unknown'),
-                    'category': item.get('category', 'general')
-                },
-                'source': item.get('source', 'Unknown')
-            })
+                'embedding': embedding,
+                'source': item.get('source', 'Unknown'),
+                'category': item.get('category', 'general')
+            }
+            documents_to_insert.append(doc)
     
-    print(f"📝 Inserting {len(documents_to_insert)} documents...")
+    print(f"📝 Inserting {len(documents_to_insert)} documents to Qdrant...")
     
-    insert_vectors_direct(documents_to_insert)
+    # Collection is auto-created by _ensure_collection in qdrant_service
+    # Just add documents
+    batch_size = 100
+    for i in range(0, len(documents_to_insert), batch_size):
+        batch = documents_to_insert[i:i+batch_size]
+        qdrant_service.add_documents(batch)
+        print(f"  ➡️ Inserted {min(i+batch_size, len(documents_to_insert))}/{len(documents_to_insert)}")
     
+    total = qdrant_service.count_documents()
     print(f"✅ Successfully ingested {len(documents_to_insert)} documents!")
-    
-    total = count_documents()
-    print(f"📊 Total documents in knowledge base: {total}")
+    print(f"📊 Total documents in Qdrant: {total}")
 
 
 def main():
     """Main ingestion function"""
     print("🚀 Starting knowledge ingestion...")
+    
+    # Configure Qdrant with credentials from settings
+    if settings.qdrant_url and settings.qdrant_api_key:
+        qdrant_service.configure(settings.qdrant_url, settings.qdrant_api_key)
+        print(f"✅ Qdrant configured: {settings.qdrant_url}")
+    else:
+        print("❌ Qdrant credentials not found in .env")
+        return
     
     data = load_sample_knowledge()
     ingest_knowledge(data)

@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     # Groq
     groq_api_key: str
     
+    # Qdrant (Optional)
+    qdrant_url: Optional[str] = None
+    qdrant_api_key: Optional[str] = None
+    use_qdrant: bool = True
+    
     # Server
     port: int = 8000
     host: str = "0.0.0.0"

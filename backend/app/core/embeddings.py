@@ -1,27 +1,38 @@
-from sentence_transformers import SentenceTransformer
-from typing import List, Union
+"""
+Lightweight embedding service using FastEmbed
+- No torch dependency
+- Fast startup (~1s vs 10s)
+- Small model size
+- Same quality as sentence-transformers
+"""
+
+from fastembed import TextEmbedding
+from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class EmbeddingService:
+class FastEmbeddingService:
     _instance = None
     _model = None
     
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            print("Loading Sentence Transformer model (all-MiniLM-L6-v2)...")
-            cls._model = SentenceTransformer('all-MiniLM-L6-v2')
-            print("Model loaded successfully!")
+            logger.info("Loading FastEmbed model (all-MiniLM-L6-v2)...")
+            cls._model = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+            logger.info("Model loaded!")
         return cls._instance
     
     def embed_text(self, text: str) -> List[float]:
         """Generate embedding for a single text"""
-        embedding = self._model.encode(text, convert_to_tensor=False)
-        return embedding.tolist()
+        embeddings = list(self._model.embed([text]))
+        return embeddings[0].tolist()
     
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for multiple texts"""
-        embeddings = self._model.encode(texts, convert_to_tensor=False)
+        embeddings = list(self._model.embed(texts))
         return [emb.tolist() for emb in embeddings]
     
     @property
@@ -31,4 +42,4 @@ class EmbeddingService:
 
 
 # Singleton instance
-embedding_service = EmbeddingService()
+embedding_service = FastEmbeddingService()

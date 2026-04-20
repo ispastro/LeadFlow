@@ -1,7 +1,7 @@
 from typing import List, Dict
 from app.core.embeddings import embedding_service
-from app.db.pg_direct import test_vector_search_direct
 from app.services.groq_client import groq_service
+from app.services.qdrant_service import qdrant_service
 
 
 class RAGService:
@@ -9,12 +9,24 @@ class RAGService:
     def retrieve_context(
         self,
         query: str,
-        top_k: int = 3,
+        top_k: int = 2,
         similarity_threshold: float = 0.5
     ) -> List[Dict]:
-        """Retrieve relevant documents from knowledge base"""
+        """Retrieve relevant documents from Qdrant"""
+        import time
+        
+        t1 = time.time()
         query_embedding = embedding_service.embed_text(query)
-        docs = test_vector_search_direct(query_embedding, top_k=top_k)
+        print(f"  ➡️ Embedding [{(time.time()-t1)*1000:.0f}ms]")
+        
+        t2 = time.time()
+        docs = qdrant_service.search(
+            query_vector=query_embedding,
+            top_k=top_k,
+            score_threshold=similarity_threshold
+        )
+        print(f"  ➡️ Qdrant search [{(time.time()-t2)*1000:.0f}ms] - Found {len(docs)} docs")
+        
         return docs
     
     def generate_response(
@@ -24,7 +36,12 @@ class RAGService:
         additional_instructions: str = ""
     ) -> str:
         """Generate AI response using RAG"""
+        import time
+        t_start = time.time()
+        
         context_docs = self.retrieve_context(user_message)
+        t_context = time.time()
+        print(f"  ➡️ Context retrieval total [{(t_context-t_start)*1000:.0f}ms]")
         
         if context_docs:
             context = "\n\n".join([
@@ -65,7 +82,9 @@ Rules:
         
         messages.append({"role": "user", "content": user_message})
         
+        t_llm = time.time()
         response = groq_service.chat_completion(messages, temperature=0.3)
+        print(f"  ➡️ LLM call (Groq) [{(time.time()-t_llm)*1000:.0f}ms]")
         
         return response
 

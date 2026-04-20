@@ -24,6 +24,9 @@ async def get_analytics(
         }
         
     except Exception as e:
+        print(f"❌ Analytics error: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "error": str(e),
             "overview": {

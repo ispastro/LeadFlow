@@ -6,6 +6,8 @@ class LeadCaptureService:
     
     def detect_intent(self, user_message: str, conversation_history: List[Dict] = None) -> Dict:
         """Detect user intent and buying signals"""
+        import time
+        t_start = time.time()
         
         prompt = f"""Analyze this user message and determine their intent.
 
@@ -32,6 +34,7 @@ REASON: [brief reason]
             temperature=0.3,
             max_tokens=150
         )
+        print(f"  ➡️ Intent LLM call [{(time.time()-t_start)*1000:.0f}ms]")
         
         # Parse response
         intent_data = self._parse_intent_response(response)
