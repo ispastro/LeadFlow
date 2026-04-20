@@ -15,6 +15,11 @@ window.LeadFlowWidget = {
         <Widget apiUrl={config.apiUrl || 'http://localhost:8000'} />
       </React.StrictMode>
     )
+  },
+  open: function() {
+    // Trigger chat window to open
+    const event = new CustomEvent('leadflow-open-chat')
+    window.dispatchEvent(event)
   }
 }
 

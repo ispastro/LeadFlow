@@ -17,7 +17,7 @@ function ChatWindow({ apiUrl, sessionId, onClose }) {
   useEffect(() => {
     setMessages([{
       role: 'assistant',
-      content: 'Hi! How can I help you today?',
+      content: '👋 Hi! I\'m LeadFlow AI.\n\nI can help you:\n• See how AI captures leads 24/7\n• Answer questions about automation\n• Get a personalized demo\n\nWhat would you like to know?',
       timestamp: new Date()
     }])
   }, [])
@@ -105,7 +105,7 @@ function ChatWindow({ apiUrl, sessionId, onClose }) {
                 ? 'bg-white text-black font-medium' 
                 : 'bg-neutral-900/80 backdrop-blur-sm text-white border border-neutral-800'
             }`}>
-              <p className="text-sm leading-relaxed">{msg.content}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
             </div>
           </div>
         ))}
