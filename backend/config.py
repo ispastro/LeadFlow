@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     notification_emails: Optional[str] = None
     dashboard_url: Optional[str] = "http://localhost:3001"
     
+    # Auth
+    jwt_secret: str = "your-secret-key-change-in-production"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24  # 24 hours
+    admin_email: str = "admin@leadflow.com"
+    admin_password: str = "admin123"  # Change in production
+    
     class Config:
         env_file = ".env"
         case_sensitive = False
