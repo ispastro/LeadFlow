@@ -1,0 +1,75 @@
+{
+  "name": "LeadFlow Backend",
+  "description": "AI-powered sales agent backend - converts website visitors into qualified leads",
+  "repository": "https://github.com/yourusername/leadflow",
+  "logo": "https://raw.githubusercontent.com/yourusername/leadflow/main/frontend/dashboard/public/leadflow.png",
+  "keywords": ["fastapi", "ai", "sales", "lead-generation", "rag", "chatbot"],
+  "stack": "container",
+  "env": {
+    "SUPABASE_DB_URL": {
+      "description": "PostgreSQL database URL (Supabase or Heroku Postgres)",
+      "required": true
+    },
+    "GROQ_API_KEY": {
+      "description": "Groq API key for Llama 3.3 70B model",
+      "required": true
+    },
+    "QDRANT_URL": {
+      "description": "Qdrant Cloud cluster URL",
+      "required": true
+    },
+    "QDRANT_API_KEY": {
+      "description": "Qdrant Cloud API key",
+      "required": true
+    },
+    "JWT_SECRET": {
+      "description": "Secret key for JWT token generation",
+      "generator": "secret",
+      "required": true
+    },
+    "ADMIN_EMAIL": {
+      "description": "Admin email for dashboard login",
+      "value": "admin@leadflow.com",
+      "required": false
+    },
+    "ADMIN_PASSWORD": {
+      "description": "Admin password for dashboard login",
+      "value": "admin123",
+      "required": false
+    },
+    "SMTP_HOST": {
+      "description": "SMTP server host (e.g., smtp.gmail.com)",
+      "required": false
+    },
+    "SMTP_PORT": {
+      "description": "SMTP server port",
+      "value": "587",
+      "required": false
+    },
+    "SMTP_USER": {
+      "description": "SMTP username/email",
+      "required": false
+    },
+    "SMTP_PASSWORD": {
+      "description": "SMTP password or app password",
+      "required": false
+    },
+    "NOTIFICATION_EMAILS": {
+      "description": "Comma-separated list of emails to notify on lead capture",
+      "required": false
+    },
+    "ALLOWED_ORIGINS": {
+      "description": "Comma-separated list of allowed CORS origins",
+      "value": "*",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [],
+  "buildpacks": []
+}

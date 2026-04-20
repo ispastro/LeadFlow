@@ -1,0 +1,36 @@
+name: Deploy Backend to Heroku
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-heroku.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Deploy backend to Heroku
+        uses: akhileshns/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          appdir: backend
+          usedocker: true
+          docker_heroku_process_type: web
+      
+      - name: Deployment status
+        run: |
+          echo "✅ Backend deployment successful!"
+          echo "🚀 Backend URL: https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com"
+          echo "🔍 Health check: https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com/health"

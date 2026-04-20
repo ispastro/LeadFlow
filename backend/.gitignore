@@ -7,25 +7,12 @@ __pycache__/
 env/
 venv/
 ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+.venv/
 
 # Environment
 .env
-.env.local
+.env.*
+!.env.example
 
 # IDE
 .vscode/
@@ -33,19 +20,27 @@ wheels/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-Thumbs.db
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
+.tox/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # Logs
 *.log
+logs/
 
-# Models (Sentence Transformers cache)
-models/
-.cache/
+# Distribution
+build/
+dist/
+*.egg-info/
+
+# Heroku
+.heroku/
