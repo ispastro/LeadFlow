@@ -18,6 +18,7 @@ window.LeadFlowWidget = {
   }
 }
 
+// Auto-initialize in dev mode
 if (import.meta.env.DEV) {
   window.LeadFlowWidget.init()
 }
