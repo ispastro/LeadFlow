@@ -12,7 +12,7 @@ window.LeadFlowWidget = {
     const root = ReactDOM.createRoot(container)
     root.render(
       <React.StrictMode>
-        <Widget apiUrl={config.apiUrl || 'http://localhost:8000'} />
+        <Widget apiUrl={config.apiUrl || import.meta.env.VITE_API_URL || 'http://localhost:8000'} />
       </React.StrictMode>
     )
   },
