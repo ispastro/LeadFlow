@@ -27,3 +27,20 @@ window.LeadFlowWidget = {
 if (import.meta.env.DEV) {
   window.LeadFlowWidget.init()
 }
+
+// Auto-initialize in production too
+if (typeof window !== 'undefined') {
+  // Wait for DOM to be ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!document.getElementById('leadflow-widget-container')) {
+        window.LeadFlowWidget.init()
+      }
+    })
+  } else {
+    // DOM already loaded
+    if (!document.getElementById('leadflow-widget-container')) {
+      window.LeadFlowWidget.init()
+    }
+  }
+}

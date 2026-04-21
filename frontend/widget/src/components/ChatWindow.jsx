@@ -84,7 +84,7 @@ function ChatWindow({ apiUrl, sessionId, onClose }) {
           <div>
             <h3 className="font-semibold text-sm text-white leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
               <span className="font-medium">Lead</span>
-              <span className="font-semibold" style={{ letterSpacing: '-0.02em' }}>Flow</span>
+              <span className="font-semibold" style={{ letterSpacing: '-0.02em' }}>Flow AI</span>
             </h3>
             <p className="text-xs text-neutral-400 leading-tight mt-0.5">Your AI Agent</p>
           </div>
