@@ -9,8 +9,8 @@ class RAGService:
     def retrieve_context(
         self,
         query: str,
-        top_k: int = 2,
-        similarity_threshold: float = 0.5
+        top_k: int = 3,
+        similarity_threshold: float = 0.3
     ) -> List[Dict]:
         """Retrieve relevant documents from Qdrant"""
         import time
@@ -25,7 +25,7 @@ class RAGService:
             top_k=top_k,
             score_threshold=similarity_threshold
         )
-        print(f"  ➡️ Qdrant search [{(time.time()-t2)*1000:.0f}ms] - Found {len(docs)} docs")
+        print(f"  Qdrant search [{(time.time()-t2)*1000:.0f}ms] - Found {len(docs)} docs")
         
         return docs
     
@@ -49,30 +49,30 @@ class RAGService:
                 for doc in context_docs
             ])
         else:
-            context = "No specific context found in knowledge base."
+            # Provide default company information even when no specific context found
+            context = """LeadFlow AI is a SaaS platform that converts website visitors into qualified leads automatically using AI-powered chat. 
+            Key features include: 24/7 AI chat support, automatic lead capture and qualification, real-time analytics dashboard, and easy website integration.
+            Pricing starts at $49/month for the Starter plan with a 14-day free trial available."""
         
         # Build system prompt with lead capture instructions integrated
         lead_capture_note = ""
         if "MUST ask for their contact information" in additional_instructions:
             lead_capture_note = "\n\nIMPORTANT LEAD CAPTURE: After answering the user's question, you MUST ask for their email address to proceed. Use a natural transition like: 'To get you started, what's your email address?' or 'Great! I'll need your email to send you the details.'"
         
-        system_prompt = f"""You are a helpful AI sales and support agent.
+        system_prompt = f"""You are a helpful AI sales and support agent for LeadFlow AI, a SaaS platform that converts website visitors into qualified leads automatically.
 
-CRITICAL INSTRUCTIONS:
-1. You MUST answer ONLY using the information in the context below
-2. DO NOT make up prices, features, or any information
-3. If the context doesn't contain the answer, say "I don't have that information"
-4. NEVER invent pricing - use ONLY what's in the context{lead_capture_note}
+Your primary information source is the context below. Use it to answer questions about our platform.{lead_capture_note}
 
-=== CONTEXT (USE ONLY THIS INFORMATION) ===
+=== KNOWLEDGE BASE ===
 {context}
-=== END OF CONTEXT ===
+=== END OF KNOWLEDGE BASE ===
 
-Rules:
-- Answer based STRICTLY on the context above
-- Be helpful and professional
-- If asked about pricing, use ONLY the prices from the context
-- Do not add information not in the context
+Guidelines:
+- Answer questions using the context provided
+- For pricing/features, refer to the knowledge base above
+- If the user asks something not in the context, provide a helpful general response about our platform
+- Be friendly, professional, and helpful
+- Keep responses concise (2-3 sentences)
 """
         
         messages = [{"role": "system", "content": system_prompt}]

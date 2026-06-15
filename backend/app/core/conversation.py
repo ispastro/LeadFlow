@@ -25,12 +25,14 @@ class ConversationService:
         if message_count == 0:
             return ConversationState.GREETING
         
-        # Check if we should qualify
-        if intent_data:
-            if intent_data.get('intent') in ['HIGH_INTEREST', 'READY_TO_BUY']:
+        # Check if we should qualify based on HIGH intent
+        if intent_data and intent_data.get('intent') in ['HIGH_INTEREST', 'READY_TO_BUY']:
+            # Only qualify after they've asked at least one real question
+            if message_count >= 2:
                 return ConversationState.QUALIFYING
         
-        if message_count >= 2:
+        # Natural progression: answer questions for 3-4 messages before qualifying
+        if message_count >= 4:
             return ConversationState.QUALIFYING
         
         return ConversationState.ANSWERING

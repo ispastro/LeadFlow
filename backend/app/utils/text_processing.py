@@ -32,16 +32,23 @@ def extract_email(text: str) -> str:
 
 
 def extract_name(text: str) -> str:
-    """Simple name extraction (can be improved)"""
-    # Look for "I'm [Name]" or "My name is [Name]"
+    """Extract name from text"""
+    # Remove email if present to avoid confusion
+    text_no_email = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)
+    
+    # Patterns to match names
     patterns = [
-        r"(?:i'm|i am|my name is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
-        r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*$"
+        r"(?:i'm|i am|my name is|this is|name's)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+        r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*[,.]?\s*[a-z0-9._%+-]+@",  # Name before email
+        r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)$"  # Just a capitalized name
     ]
     
     for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
+        match = re.search(pattern, text_no_email, re.IGNORECASE)
         if match:
-            return match.group(1).strip()
+            name = match.group(1).strip()
+            # Validate it's not too long (likely not a name)
+            if len(name.split()) <= 3 and len(name) <= 50:
+                return name
     
     return None

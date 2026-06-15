@@ -3,17 +3,23 @@ from app.db.pg_direct import get_db_connection
 from datetime import datetime
 
 
-def create_message(conversation_id: str, role: str, content: str) -> Dict:
+def create_message(conversation_id: str, role: str, content: str, business_id: str = None) -> Dict:
     """Create a new message"""
     with get_db_connection() as conn:
         cur = conn.cursor()
         
         try:
+            # Get business_id from conversation if not provided
+            if not business_id:
+                cur.execute("SELECT business_id FROM conversations WHERE id = %s", (conversation_id,))
+                result = cur.fetchone()
+                business_id = str(result[0]) if result else None
+            
             cur.execute("""
-                INSERT INTO messages (conversation_id, role, content, created_at)
-                VALUES (%s, %s, %s, %s)
-                RETURNING id, conversation_id, role, content, created_at
-            """, (conversation_id, role, content, datetime.utcnow()))
+                INSERT INTO messages (conversation_id, business_id, role, content, created_at)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id, conversation_id, business_id, role, content, created_at
+            """, (conversation_id, business_id, role, content, datetime.utcnow()))
             
             row = cur.fetchone()
             conn.commit()
@@ -21,9 +27,10 @@ def create_message(conversation_id: str, role: str, content: str) -> Dict:
             return {
                 'id': str(row[0]),
                 'conversation_id': str(row[1]),
-                'role': row[2],
-                'content': row[3],
-                'created_at': row[4].isoformat()
+                'business_id': str(row[2]),
+                'role': row[3],
+                'content': row[4],
+                'created_at': row[5].isoformat()
             }
         finally:
             cur.close()

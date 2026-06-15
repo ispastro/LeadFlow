@@ -1,7 +1,19 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import Widget from './Widget'
+import DemoChat from './components/DemoChat'
 import './index.css'
+
+// Render demo chat on landing page
+const demoChatContainer = document.getElementById('demo-chat-container')
+if (demoChatContainer) {
+  const root = ReactDOM.createRoot(demoChatContainer)
+  root.render(
+    <React.StrictMode>
+      <DemoChat />
+    </React.StrictMode>
+  )
+}
 
 window.LeadFlowWidget = {
   init: function(config = {}) {

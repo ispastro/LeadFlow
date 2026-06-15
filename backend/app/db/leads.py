@@ -17,11 +17,26 @@ def create_lead(
         cur = conn.cursor()
         
         try:
+            # Get business_id from conversation
+            cur.execute("SELECT business_id FROM conversations WHERE id = %s", (conversation_id,))
+            result = cur.fetchone()
+            business_id = str(result[0]) if result else None
+            
             cur.execute("""
-                INSERT INTO leads (conversation_id, email, name, intent, budget, metadata, captured_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO leads (conversation_id, business_id, email, name, intent_trigger, quality, captured_via, metadata, captured_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
-            """, (conversation_id, email, name, intent, budget, psycopg2.extras.Json(metadata or {}), datetime.utcnow()))
+            """, (
+                conversation_id,
+                business_id,
+                email,
+                name,
+                intent or 'other',
+                'MEDIUM',
+                'asked',
+                psycopg2.extras.Json(metadata or {}),
+                datetime.utcnow()
+            ))
             
             lead_id = cur.fetchone()[0]
             conn.commit()
@@ -38,7 +53,7 @@ def get_lead_by_conversation(conversation_id: str) -> Optional[Dict]:
         
         try:
             cur.execute("""
-                SELECT id, conversation_id, email, name, intent, budget, metadata, captured_at
+                SELECT id, conversation_id, business_id, email, name, intent_trigger, quality, captured_via, metadata, captured_at
                 FROM leads
                 WHERE conversation_id = %s
             """, (conversation_id,))
@@ -50,12 +65,14 @@ def get_lead_by_conversation(conversation_id: str) -> Optional[Dict]:
             return {
                 'id': str(row[0]),
                 'conversation_id': str(row[1]),
-                'email': row[2],
-                'name': row[3],
-                'intent': row[4],
-                'budget': row[5],
-                'metadata': row[6],
-                'captured_at': row[7].isoformat()
+                'business_id': str(row[2]),
+                'email': row[3],
+                'name': row[4],
+                'intent': row[5],
+                'quality': row[6],
+                'captured_via': row[7],
+                'metadata': row[8],
+                'captured_at': row[9].isoformat()
             }
         finally:
             cur.close()
@@ -74,7 +91,7 @@ def get_all_leads() -> List[Dict]:
         
         try:
             cur.execute("""
-                SELECT id, conversation_id, email, name, intent, budget, metadata, captured_at
+                SELECT id, conversation_id, business_id, email, name, intent_trigger, quality, captured_via, metadata, captured_at
                 FROM leads
                 ORDER BY captured_at DESC
             """)
@@ -86,12 +103,14 @@ def get_all_leads() -> List[Dict]:
                 leads.append({
                     'id': str(row[0]),
                     'conversation_id': str(row[1]),
-                    'email': row[2],
-                    'name': row[3],
-                    'intent': row[4],
-                    'budget': row[5],
-                    'metadata': row[6],
-                    'created_at': row[7].isoformat() if row[7] else None
+                    'business_id': str(row[2]),
+                    'email': row[3],
+                    'name': row[4],
+                    'intent': row[5],
+                    'quality': row[6],
+                    'captured_via': row[7],
+                    'metadata': row[8],
+                    'created_at': row[9].isoformat() if row[9] else None
                 })
             
             return leads

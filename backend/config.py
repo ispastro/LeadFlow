@@ -9,9 +9,9 @@ class Settings(BaseSettings):
     # Groq
     groq_api_key: str
     
-    # Qdrant (Optional)
-    qdrant_url: Optional[str] = None
-    qdrant_api_key: Optional[str] = None
+    # Qdrant
+    qdrant_url: str
+    qdrant_api_key: str
     use_qdrant: bool = True
     
     # Server

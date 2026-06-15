@@ -1,41 +1,113 @@
-# LeadFlow
+# LeadFlow AI
 
-> AI-powered sales agent that converts website visitors into qualified leads automatically
+> Your 24/7 AI Sales Team - Converts website visitors into qualified leads automatically
 
+[![Live Demo](https://img.shields.io/badge/demo-live-success?style=flat)](https://lead-flow-cgkd.vercel.app/)
+[![Dashboard](https://img.shields.io/badge/dashboard-live-blue?style=flat)](https://lead-flow-roan.vercel.app/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-00a393?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18+-61dafb?style=flat&logo=react&logoColor=black)](https://react.dev/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## ✨ Features
 
-- 🤖 **AI-Powered Chat** - RAG-based responses using Llama 3.3 70B via Groq
-- 📧 **Email Notifications** - Instant alerts when leads are captured (1-2 seconds)
+- 🤖 **AI-Powered Chat** - Intelligent responses using Groq AI with RAG
+- 📧 **Email Notifications** - Instant alerts when leads are captured
 - 📊 **Analytics Dashboard** - Track conversations, leads, and conversion rates
 - 💬 **Conversation History** - Full chat logs with lead context
 - 🎯 **Smart Lead Capture** - Automatic intent detection and qualification
-- 🔍 **Vector Search** - pgvector-powered semantic knowledge retrieval
+- 🔍 **Vector Search** - Qdrant-powered semantic knowledge retrieval
 - 📱 **Embeddable Widget** - Drop-in chat widget for any website
-- 📈 **CSV Export** - Download leads for CRM import
-- 🎨 **Modern UI** - Vercel-inspired dark mode design
+- 🔐 **JWT Authentication** - Secure dashboard access
+- 🎨 **Modern UI** - Clean minimal design inspired by Vercel
 
-## 🚀 Quick Start
+## 🚀 Live Demo
 
-### Prerequisites
+- **Widget**: https://lead-flow-cgkd.vercel.app/
+- **Dashboard**: https://lead-flow-roan.vercel.app/
+- **Backend API**: https://leadflow-backend-0457e7580588.herokuapp.com/
 
-- Python 3.9+
-- Node.js 18+
-- PostgreSQL 16+ with pgvector extension
-- Gmail account (for email notifications)
+**Default Login:**
+- Email: `admin@leadflow.com`
+- Password: `admin123`
 
-### 1. Clone Repository
+## 📁 Project Structure
 
-```bash
-git clone https://github.com/yourusername/leadflow.git
-cd leadflow
+```
+leadflow/
+├── backend/                 # FastAPI backend (Heroku)
+│   ├── app/
+│   │   ├── api/            # REST endpoints
+│   │   ├── core/           # RAG pipeline, lead capture
+│   │   ├── services/       # Groq AI, email, Qdrant
+│   │   └── db/             # PostgreSQL operations
+│   └── scripts/            # Knowledge ingestion
+│
+├── frontend/
+│   ├── dashboard/          # Admin dashboard (Vercel)
+│   │   └── src/pages/      # Overview, Leads, Analytics, Conversations
+│   │
+│   └── widget/             # Chat widget (Vercel)
+│       └── src/            # Landing page + chat interface
+│
+└── README.md
 ```
 
-### 2. Backend Setup
+## 🛠️ Tech Stack
+
+**Backend:**
+- FastAPI + Uvicorn
+- Groq AI (Llama 3.3 70B)
+- Qdrant Cloud (vector database)
+- PostgreSQL (Supabase)
+- JWT Authentication
+- SMTP Email Notifications
+
+**Frontend:**
+- React 18 + Vite
+- Tailwind CSS
+- Recharts (analytics)
+- Axios (HTTP client)
+
+**Deployment:**
+- Backend: Heroku (Docker)
+- Frontend: Vercel
+- Database: Supabase
+- Vector DB: Qdrant Cloud
+
+## 🎯 How It Works
+
+### 1. User Visits Website
+```
+Landing page → Click "Chat with Demo" → Chat window opens
+```
+
+### 2. AI Conversation (RAG Pipeline)
+```
+User message → Embed query → Qdrant vector search → 
+Retrieve context → Groq AI generates response → Return to user
+```
+
+### 3. Lead Capture
+```
+Detect intent → Ask for email → Save to PostgreSQL → 
+Send email notification → Appears in dashboard
+```
+
+### 4. Dashboard Analytics
+```
+Admin logs in → View leads, conversations, analytics → 
+Export to CSV → Track conversion rates
+```
+
+## 🚀 Local Development
+
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- PostgreSQL database (Supabase)
+- Qdrant Cloud account
+- Groq API key
+
+### Backend Setup
 
 ```bash
 cd backend
@@ -54,7 +126,7 @@ python scripts/ingest_knowledge.py
 uvicorn main:app --reload --port 8000
 ```
 
-### 3. Frontend Setup
+### Frontend Setup
 
 **Dashboard:**
 ```bash
@@ -64,272 +136,167 @@ npm run dev
 # Opens at http://localhost:3001
 ```
 
-**Chat Widget:**
+**Widget:**
 ```bash
 cd frontend/widget
 npm install
 npm run dev
-# Opens at http://localhost:3000
+# Opens at http://localhost:3001
 ```
-
-### 4. Email Notifications (Optional)
-
-```bash
-# Get Gmail app password
-# Visit: https://myaccount.google.com/apppasswords
-
-# Add to backend/.env
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-NOTIFICATION_EMAILS=sales@company.com
-
-# Test email
-cd backend
-python scripts/test_email.py
-```
-
-## 📁 Project Structure
-
-```
-leadflow/
-├── backend/                 # FastAPI backend
-│   ├── app/
-│   │   ├── api/            # REST endpoints
-│   │   ├── core/           # Business logic (RAG, lead capture)
-│   │   ├── services/       # External services (Groq, email)
-│   │   ├── db/             # Database operations
-│   │   └── models/         # Pydantic schemas
-│   ├── scripts/            # Utility scripts
-│   └── main.py             # Application entry point
-│
-├── frontend/
-│   ├── dashboard/          # Admin dashboard (React + Vite)
-│   │   ├── src/
-│   │   │   ├── pages/      # Dashboard, Analytics, Leads, Conversations
-│   │   │   ├── components/ # Reusable UI components
-│   │   │   └── services/   # API client
-│   │   └── public/
-│   │
-│   └── widget/             # Embeddable chat widget (React + Vite)
-│       ├── src/
-│       │   └── components/ # ChatWindow, ChatBubble
-│       └── public/
-│
-└── README.md
-```
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Framework**: FastAPI
-- **AI**: Groq (Llama 3.3 70B)
-- **Embeddings**: Sentence Transformers (all-MiniLM-L6-v2)
-- **Database**: PostgreSQL + pgvector
-- **Email**: SMTP (Gmail/SendGrid/AWS SES)
-
-### Frontend
-- **Framework**: React 18 + Vite
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Icons**: Lucide React
-- **HTTP**: Axios
 
 ## 📡 API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| `POST` | `/api/auth/login` | Login to dashboard |
+| `GET` | `/api/auth/me` | Get current user |
 | `POST` | `/api/chat` | Send message, get AI response |
 | `GET` | `/api/leads` | Get all captured leads |
 | `GET` | `/api/analytics` | Get analytics data |
 | `GET` | `/api/conversations` | Get all conversations |
 | `GET` | `/api/conversations/{id}` | Get conversation details |
-| `POST` | `/api/knowledge/ingest` | Add knowledge base content |
+| `GET` | `/api/knowledge` | Get knowledge base documents |
 | `GET` | `/health` | Health check |
-
-## 🎯 How It Works
-
-### 1. User Interaction
-```
-User visits website → Opens chat widget → Asks questions
-```
-
-### 2. AI Response (RAG Pipeline)
-```
-User message → Embed query → Vector search → Retrieve context → 
-Generate response with Llama 3.3 → Return to user
-```
-
-### 3. Lead Capture
-```
-Detect intent → Qualify lead → Ask for email → 
-Save to database → Send email notification (background task)
-```
-
-### 4. Email Notification
-```
-Lead captured → Background task queued → SMTP send → 
-Sales team receives email (1-2 seconds) → Click link → View conversation
-```
-
-## 📧 Email Notifications
-
-When a lead is captured, your sales team receives:
-
-**Subject:** 🎯 New Lead Captured: [Name]
-
-**Content:**
-- 🔥 Lead quality badge (Hot/Warm/Cold)
-- Name, email, intent, timestamp
-- Direct link to conversation history
-- Pro tip: "Respond within 5 minutes to increase conversion by 21x"
-
-**Setup:**
-```bash
-# See backend/EMAIL_SETUP.md for detailed guide
-python scripts/check_email_config.py  # Verify config
-python scripts/test_email.py          # Send test email
-```
-
-## 📊 Analytics
-
-Track key metrics in the dashboard:
-
-- **Total Conversations** - All chat sessions
-- **Leads Captured** - Email addresses collected
-- **Conversion Rate** - Leads / Conversations
-- **Avg Messages** - Engagement per conversation
-- **Lead Quality** - Hot/Warm/Cold breakdown
-- **Intent Distribution** - What users want
-- **Time Series** - Trends over time
-
-## 🎨 Customization
-
-### Knowledge Base
-
-Add your business information:
-
-```bash
-# Edit backend/scripts/ingest_knowledge.py
-# Add your content (text, PDFs, URLs)
-python scripts/ingest_knowledge.py
-```
-
-### Chat Widget Styling
-
-```javascript
-// frontend/widget/src/index.css
-// Customize colors, fonts, positioning
-```
-
-### Email Templates
-
-```python
-# backend/app/services/email_service.py
-# Edit _build_email_template() method
-```
-
-## 🚢 Deployment
-
-### Backend (Railway/Render/Fly.io)
-
-```bash
-# Set environment variables
-SUPABASE_DB_URL=postgresql://...
-GROQ_API_KEY=gsk_...
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-NOTIFICATION_EMAILS=sales@company.com
-
-# Deploy
-railway up  # or render deploy, fly deploy
-```
-
-### Frontend (Vercel/Netlify)
-
-```bash
-# Dashboard
-cd frontend/dashboard
-vercel deploy
-
-# Widget
-cd frontend/widget
-vercel deploy
-```
-
-### Database (Supabase)
-
-1. Create project at https://supabase.com
-2. Enable pgvector extension
-3. Run migrations (see backend/db/schema.sql)
-4. Update SUPABASE_DB_URL in .env
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
-cd backend
-python scripts/test_rag.py           # Test RAG pipeline
-python scripts/test_email.py         # Test email service
-python scripts/check_email_config.py # Verify email config
-```
-
-### Frontend Tests
-```bash
-cd frontend/dashboard
-npm run build  # Check for build errors
-
-cd frontend/widget
-npm run build  # Check for build errors
-```
-
-### Integration Test
-1. Start backend: `uvicorn main:app --reload`
-2. Start widget: `cd frontend/widget && npm run dev`
-3. Open http://localhost:3000
-4. Chat: "My email is test@example.com"
-5. Check inbox for notification email
 
 ## 📝 Environment Variables
 
 ### Backend (.env)
 ```bash
 # Database
-SUPABASE_DB_URL=postgresql://...
+DATABASE_URL=postgresql://...
 
 # AI
 GROQ_API_KEY=gsk_...
+
+# Vector Database
+QDRANT_URL=https://...qdrant.io
+QDRANT_API_KEY=...
+
+# Authentication
+JWT_SECRET=your-secret-key
+ADMIN_EMAIL=admin@leadflow.com
+ADMIN_PASSWORD=admin123
 
 # Email (Optional)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
-SMTP_FROM_EMAIL=noreply@leadflow.com
-NOTIFICATION_EMAILS=sales@company.com,team@company.com
-DASHBOARD_URL=http://localhost:3001
+NOTIFICATION_EMAILS=sales@company.com
 
-# Server
-PORT=8000
+# CORS
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
-### Frontend (.env)
+### Frontend (.env.production)
 ```bash
 # Dashboard
-VITE_API_URL=http://localhost:8000
+VITE_API_URL=https://leadflow-backend-0457e7580588.herokuapp.com
 
 # Widget
-VITE_API_URL=http://localhost:8000
+VITE_API_URL=https://leadflow-backend-0457e7580588.herokuapp.com
 ```
+
+## 🚢 Deployment
+
+### Backend (Heroku)
+
+```bash
+# Login and create app
+heroku login
+heroku create leadflow-backend
+heroku stack:set container -a leadflow-backend
+
+# Set environment variables
+heroku config:set DATABASE_URL="..." -a leadflow-backend
+heroku config:set GROQ_API_KEY="..." -a leadflow-backend
+heroku config:set QDRANT_URL="..." -a leadflow-backend
+heroku config:set QDRANT_API_KEY="..." -a leadflow-backend
+heroku config:set JWT_SECRET="..." -a leadflow-backend
+
+# Deploy using git subtree (monorepo)
+heroku git:remote -a leadflow-backend
+git subtree push --prefix backend heroku main
+```
+
+### Frontend (Vercel)
+
+```bash
+# Deploy dashboard
+cd frontend/dashboard
+vercel deploy --prod
+
+# Deploy widget
+cd frontend/widget
+vercel deploy --prod
+
+# Add environment variable in Vercel Dashboard:
+# VITE_API_URL = https://your-backend.herokuapp.com
+```
+
+## 🎨 Customization
+
+### Knowledge Base
+
+Edit `backend/scripts/ingest_knowledge.py` to add your business information:
+
+```python
+documents = [
+    {
+        "content": "Your business information here...",
+        "metadata": {"source": "company_info", "type": "text"}
+    }
+]
+```
+
+Then run:
+```bash
+python scripts/ingest_knowledge.py
+```
+
+### Widget Branding
+
+Edit `frontend/widget/index.html` to customize:
+- Logo
+- Headline
+- Subheadline
+- CTA buttons
+- Colors
+
+### Welcome Message
+
+Edit `frontend/widget/src/components/ChatWindow.jsx`:
+```javascript
+content: '👋 Hi! I\'m LeadFlow AI.\n\nI can help you:\n• Your custom bullet points\n• More information\n• Get started'
+```
+
+## 📊 Analytics
+
+Track key metrics in the dashboard:
+- Total Conversations
+- Leads Captured
+- Conversion Rate
+- Average Messages per Conversation
+- Lead Quality Distribution
+- Intent Breakdown
+- Time Series Trends
+
+## 🔐 Security
+
+- JWT-based authentication
+- Bcrypt password hashing
+- CORS protection
+- Environment variable secrets
+- Secure HTTPS endpoints
 
 ## 🤝 Contributing
 
 Contributions welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
 5. Open a Pull Request
 
 ## 📄 License
@@ -340,13 +307,14 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
 - [Groq](https://groq.com/) - Lightning-fast LLM inference
-- [Supabase](https://supabase.com/) - Open source Firebase alternative
-- [pgvector](https://github.com/pgvector/pgvector) - Vector similarity search
-- [Sentence Transformers](https://www.sbert.net/) - State-of-the-art embeddings
+- [Qdrant](https://qdrant.tech/) - Vector similarity search
+- [Supabase](https://supabase.com/) - PostgreSQL database
+- [Vercel](https://vercel.com/) - Frontend deployment
+- [Heroku](https://heroku.com/) - Backend deployment
 
 ## 📞 Support
 
-- **Documentation**: See `/backend/EMAIL_SETUP.md`, `/backend/TESTING_EMAIL.md`
+- **Live Demo**: https://lead-flow-cgkd.vercel.app/
 - **Issues**: [GitHub Issues](https://github.com/ispastro/LeadFlow/issues)
 - **Email**: haileasaye@gmail.com
 

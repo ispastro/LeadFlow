@@ -47,7 +47,8 @@ class QdrantService:
             self._client = QdrantClient(
                 url=self._qdrant_url,
                 api_key=self._qdrant_api_key,
-                timeout=30
+                timeout=60,
+                prefer_grpc=False
             )
             self._ensure_collection()
             logger.info(f"✅ Connected to Qdrant Cloud: {self._qdrant_url}")
