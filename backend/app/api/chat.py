@@ -44,7 +44,7 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
             message_count=message_count
         )
         
-        print(f"🔄 Transition: {current_stage.value} → {new_stage.value}")
+        print(f" Transition: {current_stage.value} → {new_stage.value}")
         
         # 5. Handle email capture
         if extracted_email and not email_captured:
