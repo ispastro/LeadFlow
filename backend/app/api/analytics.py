@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from app.core.analytics import analytics_service
+from app.api.auth import get_current_user
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.get("/analytics")
 async def get_analytics(
-    days: int = Query(default=30, ge=1, le=365, description="Number of days to analyze")
+    days: int = Query(default=30, ge=1, le=365, description="Number of days to analyze"),
+    _: dict = Depends(get_current_user)
 ):
     """Get analytics data for dashboard"""
     try:
@@ -14,7 +18,7 @@ async def get_analytics(
         lead_quality = analytics_service.get_lead_quality_breakdown(days)
         intent_breakdown = analytics_service.get_intent_breakdown(days)
         time_series = analytics_service.get_time_series_data(days)
-        
+
         return {
             "overview": overview,
             "lead_quality": lead_quality,
@@ -22,11 +26,9 @@ async def get_analytics(
             "time_series": time_series,
             "period_days": days
         }
-        
+
     except Exception as e:
-        print(f"❌ Analytics error: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error("Analytics error: %s", e, exc_info=True)
         return {
             "error": str(e),
             "overview": {
