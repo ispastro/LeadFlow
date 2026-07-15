@@ -1,15 +1,3 @@
-"""
-Groq client — two interfaces:
-
-1. `groq_service`  — raw Groq SDK singleton, kept for the legacy /api/chat
-   endpoint and any non-LangChain code paths.
-
-2. `get_llm()`  — returns a LangChain ChatGroq instance used by all graph
-   nodes.  Every call goes through LangChain so LangSmith automatically
-   captures it as a traced span.
-"""
-from __future__ import annotations
-
 import logging
 from typing import Dict, List, Optional
 

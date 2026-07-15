@@ -1,12 +1,3 @@
-"""
-Centralised prompt library for the RevOps graph.
-
-Every prompt is a plain string constant so it can be:
-  - unit-tested in isolation
-  - versioned in git
-  - referenced by name in LangSmith traces
-"""
-
 # ---------------------------------------------------------------------------
 # Brand Persona (used by the Critic Agent)
 # ---------------------------------------------------------------------------

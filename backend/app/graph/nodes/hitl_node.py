@@ -1,20 +1,3 @@
-"""
-hitl_node — Phase 5 (Human-in-the-Loop Governance)
-
-Triggered when qualification_score >= HITL_SCORE_THRESHOLD (default 90).
-
-Uses LangGraph's `interrupt()` to pause the graph execution at this node.
-The graph state is checkpointed to Postgres. Execution resumes only when
-the approval API endpoint calls `graph.update_state()` with the human decision.
-
-Approval flow:
-  POST /api/graph/approve/{thread_id}  { "approved": true/false, "reviewer": "...", "notes": "..." }
-    → graph.update_state(config, {"human_approved": True/False, ...})
-    → graph.invoke(None, config)   ← resumes from hitl_node
-    → routes to deliver_node (approved) or manual_review_node (rejected)
-"""
-from __future__ import annotations
-
 import logging
 
 from langgraph.types import interrupt

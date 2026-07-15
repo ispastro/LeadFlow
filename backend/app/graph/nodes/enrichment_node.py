@@ -1,16 +1,3 @@
-"""
-enrichment_node — Phase 3 (Data Connectivity)
-
-Enriches the lead with company/role data before qualification scoring.
-Currently uses a mock LLM-based enrichment (infers from email domain).
-Swap `_enrich_mock()` for `_enrich_clearbit()` or `_enrich_apollo()`
-to connect a real data provider without changing any downstream nodes.
-
-Fail-safe: if enrichment fails for any reason, the node logs the error
-and continues with null enrichment fields — qualification still runs.
-"""
-from __future__ import annotations
-
 import json
 import logging
 from typing import Optional

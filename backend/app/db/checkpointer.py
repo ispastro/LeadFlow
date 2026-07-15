@@ -1,21 +1,3 @@
-"""
-Postgres-backed LangGraph checkpointer.
-
-LangGraph's AsyncPostgresSaver persists the full graph state after every node,
-giving us crash-resilience and the ability to resume interrupted graphs
-(critical for HITL approval flows).
-
-The checkpointer creates its own tables on first use:
-  - checkpoints
-  - checkpoint_blobs
-  - checkpoint_writes
-
-We expose a single async context manager `get_checkpointer()` that the
-graph builder uses at startup, and a sync `get_sync_checkpointer()` used
-in tests or scripts.
-"""
-from __future__ import annotations
-
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator

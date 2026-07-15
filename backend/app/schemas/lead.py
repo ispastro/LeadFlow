@@ -1,8 +1,3 @@
-"""
-LeadRecord — canonical Pydantic model for a captured lead.
-Used for DB persistence and API responses.
-"""
-from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime

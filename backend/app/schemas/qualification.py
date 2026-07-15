@@ -1,8 +1,3 @@
-"""
-Structured output schemas for the qualification agent.
-Using Pydantic so the LLM is forced to return valid JSON that matches this shape.
-"""
-from __future__ import annotations
 from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
 

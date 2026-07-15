@@ -1,13 +1,3 @@
-"""
-Lead persistence layer.
-
-All write operations are idempotent:
-  - upsert_lead uses ON CONFLICT (conversation_id) DO UPDATE
-    so running it twice with the same conversation_id is safe.
-  - create_lead is kept for backwards compatibility with the old chat endpoint.
-"""
-from __future__ import annotations
-
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional

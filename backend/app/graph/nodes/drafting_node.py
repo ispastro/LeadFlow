@@ -1,15 +1,3 @@
-"""
-drafting_node — Phase 4 (first half of Drafting → Critic pipeline)
-
-Uses RAG context retrieved via the `rag_retrieve` LangChain tool to
-generate a candidate response. The draft is stored in `draft_response`
-and passed to critic_node for brand validation before delivery.
-
-If critic feedback is present (revision loop), it is injected into the
-system prompt so the drafter learns from the rejection.
-"""
-from __future__ import annotations
-
 import logging
 
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage

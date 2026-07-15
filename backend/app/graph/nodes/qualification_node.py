@@ -1,13 +1,3 @@
-"""
-qualification_node — Phase 3 (Deterministic Qualification)
-
-Scores the lead 0-100 using a structured JSON output agent.
-The LLM is constrained to return a JSON object that Pydantic validates.
-If the LLM output is invalid or the call fails entirely, the node
-routes to manual_review (fail-safe — lead is never discarded).
-"""
-from __future__ import annotations
-
 import json
 import logging
 

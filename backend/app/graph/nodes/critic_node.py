@@ -1,19 +1,3 @@
-"""
-critic_node — Phase 4 (Brand Guardrails)
-
-The Critic Agent validates every draft response against the Brand Persona
-before it is delivered to the user.
-
-Flow:
-  draft_response → [critic_node] → approved? → deliver_node
-                                 → rejected (revision < 2)? → drafting_node
-                                 → rejected (revision >= 2)? → manual_review
-
-The critic can also supply a `revised_response` — a corrected version it
-produced inline — which is used as final_response if approved=True.
-"""
-from __future__ import annotations
-
 import json
 import logging
 

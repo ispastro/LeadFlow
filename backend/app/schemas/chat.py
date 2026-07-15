@@ -1,7 +1,3 @@
-"""
-Chat request/response models for the legacy /api/chat endpoint.
-Kept for backwards compatibility with the embedded chat widget.
-"""
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 

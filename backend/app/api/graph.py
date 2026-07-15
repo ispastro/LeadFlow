@@ -1,23 +1,3 @@
-"""
-graph.py — RevOps Graph API (Phase 6)
-
-Three endpoints:
-
-  POST /api/graph/invoke
-    Primary chat entry point. Invokes the graph for a session.
-    If the graph is interrupted at hitl_node, returns status=pending_approval.
-
-  GET  /api/graph/state/{session_id}
-    Returns the current checkpointed state for a session.
-    Used by the dashboard to show live graph progress.
-
-  POST /api/graph/approve/{session_id}
-    HITL webhook. Injects the human decision into the checkpointed state
-    and resumes graph execution from hitl_node.
-    Protected by JWT (dashboard-only action).
-"""
-from __future__ import annotations
-
 import logging
 import time
 from typing import Any, Dict, Optional

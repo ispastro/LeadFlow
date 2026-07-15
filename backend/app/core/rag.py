@@ -1,13 +1,3 @@
-"""
-RAG service — two interfaces:
-
-1. `rag_service.generate_response()` — legacy method kept for /api/chat.
-
-2. `rag_tool` — a LangChain @tool that graph nodes import directly.
-   Every call is automatically traced by LangSmith as a tool span.
-"""
-from __future__ import annotations
-
 import logging
 from typing import Dict, List
 

@@ -1,19 +1,3 @@
-"""
-migrate_revops.py — RevOps Engine database migration
-
-Run this ONCE after deploying the RevOps upgrade:
-  cd backend
-  python scripts/migrate_revops.py
-
-What this does:
-  1. Adds qualification + enrichment + HITL columns to the leads table
-  2. Adds a UNIQUE constraint on leads(conversation_id) for idempotent upserts
-  3. Creates the LangGraph checkpointer tables (checkpoints, checkpoint_blobs,
-     checkpoint_writes) via AsyncPostgresSaver.setup()
-  4. Creates indexes for HITL dashboard queries
-  5. All operations are idempotent — safe to run multiple times
-"""
-
 import asyncio
 import sys
 import os

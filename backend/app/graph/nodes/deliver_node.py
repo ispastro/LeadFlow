@@ -1,17 +1,3 @@
-"""
-deliver_node — Final delivery node.
-
-Responsibilities:
-- Persist the final AI response to the messages table
-- Upsert the lead record with all qualification + enrichment data (idempotent)
-- Update conversation stage in the legacy table (backwards compatibility)
-- Return the final state with `final_response` ready for the API layer
-
-Observability: all lead decisions are captured via LangSmith traces.
-Notifications: handled externally via LangSmith alerts or webhook integrations.
-"""
-from __future__ import annotations
-
 import logging
 
 from app.db import conversations as conv_db

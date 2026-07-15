@@ -1,38 +1,3 @@
-"""
-builder.py — RevOps Graph Assembly (Phase 5)
-
-Wires all nodes together with conditional edges, attaches the Postgres
-checkpointer, and configures LangSmith tracing.
-
-Graph topology:
-                        ┌─────────────┐
-                        │ input_node  │
-                        └──────┬──────┘
-                               │
-                        ┌──────▼──────┐
-                        │ enrichment  │
-                        └──────┬──────┘
-                               │
-                        ┌──────▼──────┐
-                        │qualification│
-                        └──────┬──────┘
-                               │
-               ┌───────────────┼───────────────┐
-               │ score≥90      │ score<90       │ route_to=manual_review
-               ▼               ▼               ▼
-           [hitl_node]   [drafting_node]  [manual_review]
-               │               │
-    ┌──────────┴──┐       ┌────▼──────┐
-    │approved     │reject │critic_node│
-    ▼             ▼       └────┬──────┘
-[drafting]  [manual]           │
-                    ┌──────────┼────────────┐
-                    │approved  │reject<max  │reject≥max
-                    ▼          ▼            ▼
-              [deliver]  [drafting]   [manual_review]
-"""
-from __future__ import annotations
-
 import logging
 import os
 from typing import Literal

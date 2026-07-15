@@ -1,11 +1,3 @@
-"""
-Lightweight embedding service using FastEmbed
-- No torch dependency
-- Fast startup (~1s vs 10s)
-- Small model size
-- Same quality as sentence-transformers
-"""
-
 from fastembed import TextEmbedding
 from typing import List
 import logging

@@ -1,12 +1,3 @@
-"""
-GraphState — the single, canonical state object that flows through every node
-in the LangGraph RevOps pipeline.
-
-Every field is Optional so individual nodes only touch what they own.
-LangGraph merges partial updates automatically via the Annotated reducer.
-"""
-from __future__ import annotations
-
 from typing import Annotated, Any, Dict, List, Optional
 from typing_extensions import TypedDict
 from langgraph.graph.message import add_messages

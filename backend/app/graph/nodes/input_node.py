@@ -1,14 +1,3 @@
-"""
-input_node — Entry point for every graph invocation.
-
-Responsibilities:
-- Sanitise the raw user message (strip HTML, control chars)
-- Load or create the conversation record
-- Fetch recent message history
-- Populate initial GraphState fields
-"""
-from __future__ import annotations
-
 import html
 import logging
 import re

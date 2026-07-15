@@ -1,9 +1,3 @@
-"""
-Structured output schema for the Critic Agent (Phase 4).
-The critic validates every draft response against the brand persona
-before it is delivered to the user.
-"""
-from __future__ import annotations
 from typing import List, Optional
 from pydantic import BaseModel, Field
 

@@ -1,17 +1,3 @@
-"""
-manual_review_node — Fail-Safe Destination
-
-Every error path in the graph routes here. This node NEVER discards a lead.
-
-Responsibilities:
-- Mark the lead as requiring manual review
-- Upsert the lead with is_manual_review=True (idempotent, safe to re-run)
-- Persist a safe fallback response to the user
-- Log the full error context for ops visibility
-- Return a graceful final_response so the user is never left hanging
-"""
-from __future__ import annotations
-
 import logging
 
 from app.db import messages as msg_db
