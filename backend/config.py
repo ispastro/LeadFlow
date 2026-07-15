@@ -48,17 +48,6 @@ class Settings(BaseSettings):
     admin_password: str
 
     # -----------------------------------------------------------------------
-    # Email notifications (optional)
-    # -----------------------------------------------------------------------
-    smtp_host: Optional[str] = "smtp.gmail.com"
-    smtp_port: Optional[int] = 587
-    smtp_user: Optional[str] = None
-    smtp_password: Optional[str] = None
-    smtp_from_email: Optional[str] = None
-    notification_emails: Optional[str] = None
-    dashboard_url: Optional[str] = "http://localhost:3001"
-
-    # -----------------------------------------------------------------------
     # Rate limiting
     # -----------------------------------------------------------------------
     chat_rate_limit_per_minute: int = 30

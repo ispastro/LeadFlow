@@ -5,19 +5,19 @@ Responsibilities:
 - Persist the final AI response to the messages table
 - Upsert the lead record with all qualification + enrichment data (idempotent)
 - Update conversation stage in the legacy table (backwards compatibility)
-- Fire the email notification as a background side-effect
 - Return the final state with `final_response` ready for the API layer
+
+Observability: all lead decisions are captured via LangSmith traces.
+Notifications: handled externally via LangSmith alerts or webhook integrations.
 """
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 
 from app.db import conversations as conv_db
 from app.db import messages as msg_db
 from app.db import leads as leads_db
 from app.schemas.graph_state import GraphState
-from app.services.email_service import email_service
 from app.core.state_machine import ConversationStage
 
 logger = logging.getLogger(__name__)
@@ -26,11 +26,11 @@ logger = logging.getLogger(__name__)
 def deliver_node(state: GraphState) -> GraphState:
     """Persist everything and return the final response."""
     conversation_id = state.get("conversation_id")
-    session_id = state.get("session_id", "unknown")
-    final_response = state.get("final_response") or state.get("draft_response", "")
+    session_id      = state.get("session_id", "unknown")
+    final_response  = state.get("final_response") or state.get("draft_response", "")
+    lead_email      = state.get("lead_email")
 
-    # Capture confirmation override
-    lead_email = state.get("lead_email")
+    # Capture confirmation message
     if lead_email and not state.get("email_captured"):
         final_response = (
             f"Perfect! I've noted your details and our team will reach out to "
@@ -47,17 +47,11 @@ def deliver_node(state: GraphState) -> GraphState:
     # --- Update legacy stage -------------------------------------------------
     try:
         new_stage = (
-            ConversationStage.CAPTURED.value
-            if lead_email and not state.get("email_captured")
-            else ConversationStage.POST_CAPTURE.value
-            if state.get("email_captured")
+            ConversationStage.CAPTURED.value    if lead_email and not state.get("email_captured")
+            else ConversationStage.POST_CAPTURE.value if state.get("email_captured")
             else ConversationStage.DISCOVERY.value
         )
-        conv_db.update_conversation_stage(
-            conversation_id,
-            new_stage,
-            bool(lead_email),
-        )
+        conv_db.update_conversation_stage(conversation_id, new_stage, bool(lead_email))
     except Exception as exc:
         logger.warning("deliver_node | stage update failed (non-fatal): %s", exc)
 
@@ -69,13 +63,10 @@ def deliver_node(state: GraphState) -> GraphState:
                 conversation_id=conversation_id,
                 email=lead_email,
                 name=state.get("lead_name"),
-                intent_trigger=state.get("intent_signals", ["other"])[0]
-                if state.get("intent_signals")
-                else "other",
+                intent_trigger=(state.get("intent_signals") or ["other"])[0],
                 qualification_score=state.get("qualification_score"),
                 qualification_tier=state.get("qualification_tier"),
                 intent_signals=state.get("intent_signals"),
-                recommended_action=None,
                 company_name=state.get("company_name"),
                 company_size=state.get("company_size"),
                 company_industry=state.get("company_industry"),
@@ -90,22 +81,6 @@ def deliver_node(state: GraphState) -> GraphState:
             logger.info("deliver_node | lead upserted id=%s email=%s", lead_id, lead_email)
         except Exception as exc:
             logger.error("deliver_node | lead upsert failed: %s", exc)
-
-    # --- Email notification (fire and forget) --------------------------------
-    if lead_email and lead_id:
-        try:
-            email_service.send_lead_notification(
-                lead_email=lead_email,
-                lead_name=state.get("lead_name"),
-                intent=state.get("intent_signals", ["other"])[0]
-                if state.get("intent_signals")
-                else "other",
-                quality=state.get("qualification_tier", "MEDIUM").upper(),
-                conversation_id=conversation_id,
-                lead_id=lead_id,
-            )
-        except Exception as exc:
-            logger.warning("deliver_node | email notification failed (non-fatal): %s", exc)
 
     logger.info(
         "deliver_node | session=%s response_len=%d lead_id=%s",

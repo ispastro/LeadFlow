@@ -70,19 +70,11 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("Qdrant credentials not configured — vector search disabled")
 
-    # 4. Email service
-    from app.services.email_service import email_service
-    email_service.configure(settings)
-    if email_service.enabled:
-        logger.info("Email notifications enabled → %s", email_service.notification_recipients)
-    else:
-        logger.warning("Email notifications disabled (SMTP not configured)")
-
-    # 5. LangGraph checkpointer (creates Postgres tables on first run)
+    # 4. LangGraph checkpointer (creates Postgres tables on first run)
     from app.db.checkpointer import init_checkpointer
     checkpointer = await init_checkpointer()
 
-    # 6. Build and store the compiled RevOps graph
+    # 5. Build and store the compiled RevOps graph
     from app.graph.builder import build_graph, set_graph
     revops_graph = build_graph(checkpointer)
     set_graph(revops_graph)
