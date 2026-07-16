@@ -6,9 +6,9 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # -----------------------------------------------------------------------
-    # Database
+    # Database — optional, only needed if using external Postgres
     # -----------------------------------------------------------------------
-    database_url: str
+    database_url: Optional[str] = None
 
     # -----------------------------------------------------------------------
     # AI services

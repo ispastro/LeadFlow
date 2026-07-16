@@ -1,150 +1,94 @@
+import json
+import logging
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List
-from datetime import datetime, timedelta
-from app.db.pg_direct import get_db_connection
+
+from app.db.sqlite_db import get_db_connection, from_json
+
+logger = logging.getLogger(__name__)
+
+
+def _since(days: int) -> str:
+    return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
 
 
 class AnalyticsService:
-    
+
     def get_overview_metrics(self, days: int = 30) -> Dict:
-        """Get high-level overview metrics"""
+        since = _since(days)
         with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            try:
-                # Total conversations - FIXED: Using parameterized query
-                cur.execute(
-                    "SELECT COUNT(*) FROM conversations WHERE created_at >= NOW() - INTERVAL %s",
-                    (f"{days} days",)
+            total_conversations = conn.execute(
+                "SELECT COUNT(*) FROM conversations WHERE created_at >= ?", (since,)
+            ).fetchone()[0]
+
+            total_leads = conn.execute(
+                "SELECT COUNT(*) FROM leads WHERE captured_at >= ?", (since,)
+            ).fetchone()[0]
+
+            conversion_rate = (
+                round(total_leads / total_conversations * 100, 2)
+                if total_conversations > 0 else 0
+            )
+
+            avg_row = conn.execute(
+                """
+                SELECT AVG(cnt) FROM (
+                    SELECT COUNT(*) as cnt FROM messages
+                    WHERE created_at >= ?
+                    GROUP BY conversation_id
                 )
-                total_conversations = cur.fetchone()[0]
-                
-                # Total leads - FIXED: Using parameterized query
-                cur.execute(
-                    "SELECT COUNT(*) FROM leads WHERE captured_at >= NOW() - INTERVAL %s",
-                    (f"{days} days",)
-                )
-                total_leads = cur.fetchone()[0]
-                
-                # Conversion rate
-                conversion_rate = (total_leads / total_conversations * 100) if total_conversations > 0 else 0
-                
-                # Average messages per conversation - FIXED: Using parameterized query
-                cur.execute("""
-                    SELECT AVG(message_count) FROM (
-                        SELECT conversation_id, COUNT(*) as message_count 
-                        FROM messages 
-                        WHERE created_at >= NOW() - INTERVAL %s
-                        GROUP BY conversation_id
-                    ) as msg_counts
-                """, (f"{days} days",))
-                avg_messages = cur.fetchone()[0] or 0
-                
-                return {
-                    'total_conversations': total_conversations,
-                    'total_leads': total_leads,
-                    'conversion_rate': round(conversion_rate, 2),
-                    'avg_messages_per_conversation': round(float(avg_messages), 2)
-                }
-                
-            finally:
-                cur.close()
-    
+                """,
+                (since,),
+            ).fetchone()
+            avg_messages = round(float(avg_row[0] or 0), 2)
+
+        return {
+            "total_conversations": total_conversations,
+            "total_leads": total_leads,
+            "conversion_rate": conversion_rate,
+            "avg_messages_per_conversation": avg_messages,
+        }
+
     def get_lead_quality_breakdown(self, days: int = 30) -> List[Dict]:
-        """Get lead quality distribution"""
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            try:
-                # FIXED: Using parameterized query
-                cur.execute("""
-                    SELECT 
-                        metadata->>'quality' as quality,
-                        COUNT(*) as count
-                    FROM leads
-                    WHERE captured_at >= NOW() - INTERVAL %s
-                    GROUP BY metadata->>'quality'
-                """, (f"{days} days",))
-                
-                results = cur.fetchall()
-                return [
-                    {'quality': row[0] or 'UNKNOWN', 'count': row[1]}
-                    for row in results
-                ]
-                
-            finally:
-                cur.close()
-    
+        since = _since(days)
+        leads = self._get_leads_since(since)
+        counts: Dict[str, int] = {}
+        for lead in leads:
+            q = (lead.get("metadata") or {}).get("qualification_tier") or "unknown"
+            counts[q] = counts.get(q, 0) + 1
+        return [{"quality": k.upper(), "count": v} for k, v in counts.items()]
+
     def get_intent_breakdown(self, days: int = 30) -> List[Dict]:
-        """Get intent distribution"""
+        since = _since(days)
         with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            try:
-                # FIXED: Using parameterized query
-                cur.execute("""
-                    SELECT 
-                        intent,
-                        COUNT(*) as count
-                    FROM leads
-                    WHERE captured_at >= NOW() - INTERVAL %s AND intent IS NOT NULL
-                    GROUP BY intent
-                """, (f"{days} days",))
-                
-                results = cur.fetchall()
-                return [
-                    {'intent': row[0], 'count': row[1]}
-                    for row in results
-                ]
-                
-            finally:
-                cur.close()
-    
+            rows = conn.execute(
+                "SELECT intent_trigger, COUNT(*) as cnt FROM leads WHERE captured_at >= ? AND intent_trigger IS NOT NULL GROUP BY intent_trigger",
+                (since,),
+            ).fetchall()
+        return [{"intent": r["intent_trigger"], "count": r["cnt"]} for r in rows]
+
     def get_time_series_data(self, days: int = 30) -> Dict:
-        """Get conversations and leads over time"""
+        since = _since(days)
         with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            try:
-                # Conversations per day - FIXED: Using parameterized query
-                cur.execute("""
-                    SELECT 
-                        DATE(created_at) as date,
-                        COUNT(*) as count
-                    FROM conversations
-                    WHERE created_at >= NOW() - INTERVAL %s
-                    GROUP BY DATE(created_at)
-                    ORDER BY date
-                """, (f"{days} days",))
-                
-                conversations_data = [
-                    {'date': row[0].isoformat(), 'count': row[1]}
-                    for row in cur.fetchall()
-                ]
-                
-                # Leads per day - FIXED: Using parameterized query
-                cur.execute("""
-                    SELECT 
-                        DATE(captured_at) as date,
-                        COUNT(*) as count
-                    FROM leads
-                    WHERE captured_at >= NOW() - INTERVAL %s
-                    GROUP BY DATE(captured_at)
-                    ORDER BY date
-                """, (f"{days} days",))
-                
-                leads_data = [
-                    {'date': row[0].isoformat(), 'count': row[1]}
-                    for row in cur.fetchall()
-                ]
-                
-                return {
-                    'conversations': conversations_data,
-                    'leads': leads_data
-                }
-                
-            finally:
-                cur.close()
+            conv_rows = conn.execute(
+                "SELECT DATE(created_at) as d, COUNT(*) as cnt FROM conversations WHERE created_at >= ? GROUP BY d ORDER BY d",
+                (since,),
+            ).fetchall()
+            lead_rows = conn.execute(
+                "SELECT DATE(captured_at) as d, COUNT(*) as cnt FROM leads WHERE captured_at >= ? GROUP BY d ORDER BY d",
+                (since,),
+            ).fetchall()
+        return {
+            "conversations": [{"date": r["d"], "count": r["cnt"]} for r in conv_rows],
+            "leads":         [{"date": r["d"], "count": r["cnt"]} for r in lead_rows],
+        }
+
+    def _get_leads_since(self, since: str) -> List[Dict]:
+        with get_db_connection() as conn:
+            rows = conn.execute(
+                "SELECT metadata FROM leads WHERE captured_at >= ?", (since,)
+            ).fetchall()
+        return [{"metadata": from_json(r["metadata"])} for r in rows]
 
 
-# Singleton instance
 analytics_service = AnalyticsService()

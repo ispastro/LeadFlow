@@ -1,99 +1,48 @@
-from typing import List, Dict
-from app.db.pg_direct import get_db_connection
-from datetime import datetime
+import uuid
+import logging
+from datetime import datetime, timezone
+from typing import Dict, List
+
+from app.db.sqlite_db import get_db_connection
+
+logger = logging.getLogger(__name__)
 
 
-def create_message(conversation_id: str, role: str, content: str, business_id: str = None) -> Dict:
-    """Create a new message"""
+def _utcnow() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def create_message(conversation_id: str, role: str, content: str, **_) -> Dict:
+    msg_id = str(uuid.uuid4())
+    now = _utcnow()
     with get_db_connection() as conn:
-        cur = conn.cursor()
-        
-        try:
-            # Get business_id from conversation if not provided
-            if not business_id:
-                cur.execute("SELECT business_id FROM conversations WHERE id = %s", (conversation_id,))
-                result = cur.fetchone()
-                business_id = str(result[0]) if result else None
-            
-            cur.execute("""
-                INSERT INTO messages (conversation_id, business_id, role, content, created_at)
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING id, conversation_id, business_id, role, content, created_at
-            """, (conversation_id, business_id, role, content, datetime.utcnow()))
-            
-            row = cur.fetchone()
-            conn.commit()
-            
-            return {
-                'id': str(row[0]),
-                'conversation_id': str(row[1]),
-                'business_id': str(row[2]),
-                'role': row[3],
-                'content': row[4],
-                'created_at': row[5].isoformat()
-            }
-        finally:
-            cur.close()
+        conn.execute(
+            "INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)",
+            (msg_id, conversation_id, role, content, now),
+        )
+        conn.commit()
+    return {"id": msg_id, "conversation_id": conversation_id, "role": role, "content": content, "created_at": now}
 
 
 def get_conversation_messages(conversation_id: str) -> List[Dict]:
-    """Get all messages for a conversation"""
     with get_db_connection() as conn:
-        cur = conn.cursor()
-        
-        try:
-            cur.execute("""
-                SELECT id, conversation_id, role, content, created_at
-                FROM messages
-                WHERE conversation_id = %s
-                ORDER BY created_at
-            """, (conversation_id,))
-            
-            rows = cur.fetchall()
-            messages = []
-            for row in rows:
-                messages.append({
-                    'id': str(row[0]),
-                    'conversation_id': str(row[1]),
-                    'role': row[2],
-                    'content': row[3],
-                    'created_at': row[4].isoformat()
-                })
-            return messages
-        finally:
-            cur.close()
+        rows = conn.execute(
+            "SELECT id, conversation_id, role, content, created_at FROM messages WHERE conversation_id=? ORDER BY created_at",
+            (conversation_id,),
+        ).fetchall()
+    return [dict(r) for r in rows]
 
 
 def get_conversation_history(conversation_id: str, limit: int = 10) -> List[Dict[str, str]]:
-    """Get conversation history formatted for AI (last N messages)"""
     messages = get_conversation_messages(conversation_id)
-    
-    # Get last N messages
-    recent_messages = messages[-limit:] if len(messages) > limit else messages
-    
-    # Format for AI
-    history = []
-    for msg in recent_messages:
-        history.append({
-            'role': msg['role'],
-            'content': msg['content']
-        })
-    
-    return history
+    recent = messages[-limit:] if len(messages) > limit else messages
+    return [{"role": m["role"], "content": m["content"]} for m in recent]
 
 
 def count_user_messages(conversation_id: str) -> int:
-    """Count user messages in conversation"""
     with get_db_connection() as conn:
-        cur = conn.cursor()
-        
-        try:
-            cur.execute("""
-                SELECT COUNT(*)
-                FROM messages
-                WHERE conversation_id = %s AND role = 'user'
-            """, (conversation_id,))
-            
-            return cur.fetchone()[0]
-        finally:
-            cur.close()
+        row = conn.execute(
+            "SELECT COUNT(*) FROM messages WHERE conversation_id=? AND role='user'",
+            (conversation_id,),
+        ).fetchone()
+    return row[0] if row else 0

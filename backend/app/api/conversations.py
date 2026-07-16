@@ -1,8 +1,8 @@
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from app.db import messages as msg_db
-from app.db.pg_direct import get_db_connection
+from app.db.sqlite_db import get_db_connection
 from app.api.auth import get_current_user
-import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -10,84 +10,47 @@ router = APIRouter()
 
 @router.get("/conversations/{conversation_id}")
 async def get_conversation(conversation_id: str, _: dict = Depends(get_current_user)):
-    """Get conversation with full message history"""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor()
+            row = conn.execute(
+                "SELECT id, session_id, created_at, updated_at FROM conversations WHERE id=?",
+                (conversation_id,),
+            ).fetchone()
 
-            cur.execute("""
-                SELECT id, session_id, created_at, updated_at
-                FROM conversations
-                WHERE id = %s
-            """, (conversation_id,))
+        if not row:
+            raise HTTPException(status_code=404, detail="Conversation not found")
 
-            row = cur.fetchone()
-            if not row:
-                raise HTTPException(status_code=404, detail="Conversation not found")
-
-            conversation = {
-                'id': str(row[0]),
-                'session_id': row[1],
-                'created_at': row[2].isoformat(),
-                'updated_at': row[3].isoformat()
-            }
-            cur.close()
-
+        conversation = dict(row)
         messages = msg_db.get_conversation_history(conversation_id, limit=100)
-
-        return {
-            'conversation': conversation,
-            'messages': messages
-        }
+        return {"conversation": conversation, "messages": messages}
 
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error("Failed to fetch conversation %s: %s", conversation_id, e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error fetching conversation: {str(e)}")
+    except Exception as exc:
+        logger.error("Failed to fetch conversation %s: %s", conversation_id, exc, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @router.get("/conversations")
 async def get_all_conversations(_: dict = Depends(get_current_user)):
-    """Get all conversations with basic info"""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor()
-
-            cur.execute("""
-                SELECT
-                    c.id,
-                    c.session_id,
-                    c.created_at,
-                    c.updated_at,
-                    COUNT(m.id) as message_count,
-                    l.email,
-                    l.name
+            rows = conn.execute(
+                """
+                SELECT c.id, c.session_id, c.created_at, c.updated_at,
+                       COUNT(m.id) as message_count,
+                       l.email, l.name
                 FROM conversations c
                 LEFT JOIN messages m ON c.id = m.conversation_id
                 LEFT JOIN leads l ON c.id = l.conversation_id
                 GROUP BY c.id, c.session_id, c.created_at, c.updated_at, l.email, l.name
                 ORDER BY c.updated_at DESC
-            """)
+                """
+            ).fetchall()
 
-            rows = cur.fetchall()
-            conversations = []
+        conversations = [dict(r) for r in rows]
+        return {"conversations": conversations, "total": len(conversations)}
 
-            for row in rows:
-                conversations.append({
-                    'id': str(row[0]),
-                    'session_id': row[1],
-                    'created_at': row[2].isoformat(),
-                    'updated_at': row[3].isoformat(),
-                    'message_count': row[4],
-                    'email': row[5],
-                    'name': row[6]
-                })
-
-            cur.close()
-
-        return {'conversations': conversations, 'total': len(conversations)}
-
-    except Exception as e:
-        logger.error("Failed to fetch conversations: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error fetching conversations: {str(e)}")
+    except Exception as exc:
+        logger.error("Failed to fetch conversations: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(exc))

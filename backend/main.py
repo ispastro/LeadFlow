@@ -42,10 +42,12 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("Starting LeadFlow RevOps Engine (env=%s)", settings.environment)
 
-    # 1. Postgres connection pool
-    from app.db.pg_direct import initialize_pool
-    initialize_pool(minconn=2, maxconn=10)
-    logger.info("DB connection pool ready")
+    # 1. SQLite database — create tables if not present
+    from app.db.sqlite_db import set_db_path
+    from scripts.migrate_revops import main as run_migration
+    set_db_path("leadflow.db")
+    run_migration()
+    logger.info("SQLite app DB ready → leadflow.db")
 
     # 2. Embedding model
     _ = embedding_service.dimension
@@ -86,8 +88,8 @@ async def lifespan(app: FastAPI):
         yield  # ← application serves requests here
 
     # Cleanup
-    from app.db.pg_direct import close_pool
-    close_pool()
+    from app.db.sqlite_db import close_connections
+    close_connections()
     logger.info("Shutdown complete")
 
 
