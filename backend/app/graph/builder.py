@@ -3,7 +3,6 @@ import os
 from typing import Literal
 
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from app.schemas.graph_state import GraphState
 from app.graph.nodes.input_node import input_node
@@ -107,7 +106,7 @@ def _route_after_critic(
 # Graph factory
 # ---------------------------------------------------------------------------
 
-def build_graph(checkpointer: AsyncPostgresSaver) -> StateGraph:
+def build_graph(checkpointer) -> StateGraph:
     """
     Assemble and compile the RevOps StateGraph.
 

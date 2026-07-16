@@ -44,3 +44,6 @@ dist/
 
 # Heroku
 .heroku/
+
+# LangGraph SQLite checkpointer (local dev)
+checkpoints.db
