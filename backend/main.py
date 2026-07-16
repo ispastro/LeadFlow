@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from app.api import chat, leads, health, analytics, conversations, auth, knowledge_mgmt
+from app.api import chat, leads, health, analytics, conversations, auth, knowledge_mgmt, ingest
 from app.api import graph as graph_router
 from app.core.embeddings import embedding_service
 
@@ -116,6 +116,7 @@ app.add_middleware(
 app.include_router(health.router,         tags=["Health"])
 app.include_router(auth.router,           prefix="/api", tags=["Auth"])
 app.include_router(graph_router.router,   prefix="/api", tags=["RevOps Graph"])
+app.include_router(ingest.router,         prefix="/api", tags=["Ingestion"])
 app.include_router(chat.router,           prefix="/api", tags=["Chat (Legacy)"])
 app.include_router(leads.router,          prefix="/api", tags=["Leads"])
 app.include_router(knowledge_mgmt.router, prefix="/api", tags=["Knowledge"])
