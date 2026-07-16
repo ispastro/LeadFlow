@@ -47,3 +47,6 @@ dist/
 
 # LangGraph SQLite checkpointer (local dev)
 checkpoints.db
+
+# FastEmbed model cache (downloaded on first run, ~67MB)
+.fastembed_cache/

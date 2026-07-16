@@ -22,8 +22,8 @@ langsmith>=0.1.0
 # --- Groq (direct client kept for non-LC paths) ---
 groq>=0.4.1
 
-# --- Embeddings (no torch dependency) ---
-fastembed>=0.2.0
+# --- Embeddings (FastEmbed by Qdrant — no PyTorch dependency) ---
+fastembed>=0.8.0
 
 # --- Vector DB ---
 qdrant-client>=1.7.0

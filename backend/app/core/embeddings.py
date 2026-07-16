@@ -1,37 +1,47 @@
-from fastembed import TextEmbedding
-from typing import List
 import logging
+import os
+from typing import List
+
+# Must be set before fastembed / huggingface_hub is imported.
+# Prevents HF Hub from making network calls once the model is cached locally.
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("FASTEMBED_CACHE_PATH", ".fastembed_cache")
+
+from fastembed import TextEmbedding
 
 logger = logging.getLogger(__name__)
 
+# Qdrant's recommended default model.
+# 384-dim cosine space — compatible with existing Qdrant collections.
+_MODEL_NAME = "BAAI/bge-small-en-v1.5"
+_DIMENSION  = 384
 
-class FastEmbeddingService:
+
+class EmbeddingService:
     _instance = None
-    _model = None
-    
+    _model: TextEmbedding = None
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            logger.info("Loading FastEmbed model (all-MiniLM-L6-v2)...")
-            cls._model = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
-            logger.info("Model loaded!")
+            logger.info("Loading FastEmbed model: %s", _MODEL_NAME)
+            cls._model = TextEmbedding(
+                model_name=_MODEL_NAME,
+                cache_dir=os.environ.get("FASTEMBED_CACHE_PATH", ".fastembed_cache"),
+            )
+            logger.info("FastEmbed model ready (dim=%d)", _DIMENSION)
         return cls._instance
-    
+
     def embed_text(self, text: str) -> List[float]:
-        """Generate embedding for a single text"""
-        embeddings = list(self._model.embed([text]))
-        return embeddings[0].tolist()
-    
+        return list(self._model.embed([text]))[0].tolist()
+
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
-        """Generate embeddings for multiple texts"""
-        embeddings = list(self._model.embed(texts))
-        return [emb.tolist() for emb in embeddings]
-    
+        return [emb.tolist() for emb in self._model.embed(texts)]
+
     @property
     def dimension(self) -> int:
-        """Get embedding dimension"""
-        return 384  # all-MiniLM-L6-v2 dimension
+        return _DIMENSION
 
 
-# Singleton instance
-embedding_service = FastEmbeddingService()
+# Singleton
+embedding_service = EmbeddingService()
