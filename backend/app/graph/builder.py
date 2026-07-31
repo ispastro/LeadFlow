@@ -22,16 +22,14 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 def _configure_langsmith() -> None:
     if settings.langsmith_enabled:
-        os.environ["LANGCHAIN_TRACING_V2"] = "true"
-        os.environ["LANGCHAIN_API_KEY"] = settings.langchain_api_key
-        os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
-        os.environ["LANGCHAIN_ENDPOINT"] = settings.langchain_endpoint
-        logger.info(
-            "LangSmith tracing ENABLED → project='%s'", settings.langchain_project
-        )
+        os.environ["LANGSMITH_API_KEY"]  = settings.langsmith_api_key
+        os.environ["LANGSMITH_TRACING"]  = "true"
+        os.environ["LANGSMITH_PROJECT"]  = settings.langsmith_project
+        os.environ["LANGSMITH_ENDPOINT"] = settings.langsmith_endpoint
+        logger.info("LangSmith tracing ENABLED → project='%s'", settings.langsmith_project)
     else:
-        os.environ["LANGCHAIN_TRACING_V2"] = "false"
-        logger.info("LangSmith tracing DISABLED (set LANGCHAIN_API_KEY + LANGCHAIN_TRACING_V2=true to enable)")
+        os.environ["LANGSMITH_TRACING"] = "false"
+        logger.info("LangSmith tracing DISABLED (set LANGSMITH_API_KEY + LANGSMITH_TRACING=true to enable)")
 
 
 # ---------------------------------------------------------------------------

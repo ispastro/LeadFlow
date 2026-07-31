@@ -19,12 +19,12 @@ class Settings(BaseSettings):
     use_qdrant: bool = True
 
     # -----------------------------------------------------------------------
-    # LangSmith observability (Phase 6)
+    # LangSmith observability
     # -----------------------------------------------------------------------
-    langchain_api_key: Optional[str] = None          # LangSmith API key
-    langchain_tracing_v2: bool = False               # Enable LangSmith tracing
-    langchain_project: str = "leadflow-revops"       # Project name in LangSmith
-    langchain_endpoint: str = "https://api.smith.langchain.com"
+    langsmith_api_key: Optional[str] = None
+    langsmith_tracing: bool = False
+    langsmith_project: str = "leadflow"
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
 
     # -----------------------------------------------------------------------
     # Server
@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
 
     # -----------------------------------------------------------------------
     # Validators
@@ -123,7 +124,7 @@ class Settings(BaseSettings):
 
     @property
     def langsmith_enabled(self) -> bool:
-        return bool(self.langchain_api_key and self.langchain_tracing_v2)
+        return bool(self.langsmith_api_key and self.langsmith_tracing)
 
 
 settings = Settings()

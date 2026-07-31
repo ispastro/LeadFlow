@@ -86,17 +86,13 @@ pip install -r requirements.txt
 
 # 3. Configure environment
 cp .env.example .env
-# Set DATABASE_URL, GROQ_API_KEY, QDRANT_URL, QDRANT_API_KEY,
-# JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
-# Optionally: LANGCHAIN_API_KEY + LANGCHAIN_TRACING_V2=true
+# Set GROQ_API_KEY, QDRANT_URL, QDRANT_API_KEY, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+# DATABASE_URL is not required — app uses SQLite
 
-# 4. Run migration (creates checkpointer tables + lead schema)
+# 4. Create SQLite schema
 python scripts/migrate_revops.py
 
-# 5. Seed knowledge base
-python scripts/ingest_knowledge.py
-
-# 6. Launch
+# 5. Launch
 uvicorn main:app --reload
 ```
 
@@ -116,6 +112,9 @@ Docs: `http://localhost:8000/docs` (development only)
 | `GET`  | `/api/leads` | JWT | All captured leads with qualification data |
 | `GET`  | `/api/analytics` | JWT | Dashboard metrics |
 | `GET`  | `/api/knowledge` | JWT | Knowledge base documents |
+| `POST` | `/api/ingest/file` | JWT | Upload a file (PDF, DOCX, TXT, MD) and index it |
+| `POST` | `/api/ingest/text` | JWT | Ingest plain text via JSON body |
+| `GET`  | `/api/ingest/status` | JWT | Vector collection stats |
 | `GET`  | `/health` | — | Health check |
 
 ---

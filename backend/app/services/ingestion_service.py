@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import uuid
 from typing import Optional
 
 from app.core.embeddings import embedding_service
@@ -15,22 +16,15 @@ CHUNK_OVERLAP = 30  # words
 
 def _content_hash(content: str, filename: Optional[str] = None) -> str:
     """
-    Produce a deterministic document_id from content.
-
-    Strategy:
-      - Hash the cleaned content body with SHA-256.
-      - Optionally mix in the filename so two files with identical content
-        but different filenames get distinct IDs.
-      - Truncate to 16 hex chars — short enough to be readable in Qdrant
-        payloads, collision probability negligible at this scale.
-
-    The same document submitted twice produces the same ID, enabling the
-    Qdrant upsert to overwrite the old vectors instead of creating duplicates.
+    Produce a deterministic UUID v5 from the document content.
+    UUID v5 is a name-based UUID — same input always produces the same UUID,
+    giving us idempotent upserts in Qdrant.
     """
     blob = clean_text(content)
     if filename:
         blob = f"{filename}::{blob}"
-    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
+    # UUID5 with DNS namespace gives a valid UUID from any string
+    return str(uuid.uuid5(uuid.NAMESPACE_DNS, blob))
 
 
 def ingest_document(
@@ -64,8 +58,12 @@ def ingest_document(
 
     points = []
     for i, chunk in enumerate(chunks):
-        # Stable per-chunk ID: same document + same chunk position = same ID
-        chunk_id = f"{document_id}-{i}" if len(chunks) > 1 else document_id
+        # Stable per-chunk ID: deterministic UUID from document_id + chunk index
+        chunk_id = (
+            str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{document_id}-{i}"))
+            if len(chunks) > 1
+            else document_id
+        )
 
         embedding = embedding_service.embed_text(chunk)
 

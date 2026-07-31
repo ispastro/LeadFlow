@@ -4,7 +4,6 @@ from typing import List
 
 # Must be set before fastembed / huggingface_hub is imported.
 # Prevents HF Hub from making network calls once the model is cached locally.
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("FASTEMBED_CACHE_PATH", ".fastembed_cache")
 
 from fastembed import TextEmbedding
@@ -25,10 +24,7 @@ class EmbeddingService:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             logger.info("Loading FastEmbed model: %s", _MODEL_NAME)
-            cls._model = TextEmbedding(
-                model_name=_MODEL_NAME,
-                cache_dir=os.environ.get("FASTEMBED_CACHE_PATH", ".fastembed_cache"),
-            )
+            cls._model = TextEmbedding(model_name=_MODEL_NAME)
             logger.info("FastEmbed model ready (dim=%d)", _DIMENSION)
         return cls._instance
 

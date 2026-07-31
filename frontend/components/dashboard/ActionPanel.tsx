@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, X } from 'lucide-react'
-import type { Lead } from '@/types/dashboard'
-import { approveLead, rejectLead } from '@/lib/dashboard-api'
+import { Check, X, Loader2 } from 'lucide-react'
+import type { Lead } from '@/lib/api'
+import { useApproveLead } from '@/lib/queries'
 
 interface ActionPanelProps {
   lead: Lead
@@ -11,83 +11,82 @@ interface ActionPanelProps {
 }
 
 export function ActionPanel({ lead, onClose }: ActionPanelProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [notes, setNotes] = useState('')
+  const { mutate: approve, isPending, error } = useApproveLead()
 
-  const handleApprove = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      await approveLead(lead.id)
-      console.log(`[v0] Lead ${lead.id} approved successfully`)
-      onClose()
-    } catch (err) {
-      setError('Failed to approve lead')
-      console.error('[v0] Error approving lead:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleReject = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      await rejectLead(lead.id, 'Rejected by supervisor')
-      console.log(`[v0] Lead ${lead.id} rejected successfully`)
-      onClose()
-    } catch (err) {
-      setError('Failed to reject lead')
-      console.error('[v0] Error rejecting lead:', err)
-    } finally {
-      setIsLoading(false)
-    }
+  const handleDecision = (approved: boolean) => {
+    // The backend approve endpoint uses session_id = conversation_id
+    approve(
+      {
+        sessionId: lead.conversation_id,
+        payload: { approved, notes: notes || undefined },
+      },
+      { onSuccess: () => onClose() },
+    )
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-foreground">Action Panel</h3>
+      <h3 className="text-sm font-semibold text-foreground">Action Required</h3>
 
-      {/* AI-Drafted Email */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">AI-Drafted Email</p>
-        <div className="rounded-lg border border-border bg-muted/30 p-4">
-          <div className="space-y-2 text-sm text-foreground/80">
-            <p className="font-mono text-xs text-muted-foreground">{lead.draftEmail}</p>
-          </div>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Qualification Summary
+        </p>
+        <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1 text-sm">
+          <p><span className="text-muted-foreground">Score:</span> <span className="font-medium text-foreground">{lead.metadata?.qualification_score ?? '—'}/100</span></p>
+          <p><span className="text-muted-foreground">Tier:</span> <span className="font-medium text-foreground capitalize">{lead.metadata?.qualification_tier ?? '—'}</span></p>
+          {lead.metadata?.intent_signals?.length ? (
+            <div className="flex flex-wrap gap-1 pt-1">
+              {lead.metadata.intent_signals.map((s) => (
+                <span key={s} className="px-1.5 py-0.5 text-xs bg-muted text-muted-foreground rounded border border-border">
+                  {s.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {/* Error message */}
+      {/* Reviewer notes */}
+      <div className="space-y-2">
+        <label htmlFor="reviewer-notes" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Notes <span className="normal-case">(optional)</span>
+        </label>
+        <textarea
+          id="reviewer-notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          placeholder="Add context for the team..."
+          className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+        />
+      </div>
+
       {error && (
         <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
+          {(error as Error).message}
         </div>
       )}
 
-      {/* Action Buttons */}
       <div className="grid grid-cols-2 gap-3 pt-2">
         <button
-          onClick={handleReject}
-          disabled={isLoading}
+          onClick={() => handleDecision(false)}
+          disabled={isPending}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-destructive/20 px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/30 disabled:opacity-50"
         >
-          <X className="h-4 w-4" />
-          <span>Reject Lead</span>
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+          Reject
         </button>
         <button
-          onClick={handleApprove}
-          disabled={isLoading}
+          onClick={() => handleDecision(true)}
+          disabled={isPending}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-500/20 px-4 py-2.5 text-sm font-medium text-green-400 transition-colors hover:bg-green-500/30 disabled:opacity-50"
         >
-          <Check className="h-4 w-4" />
-          <span>Approve & Sync</span>
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          Approve
         </button>
       </div>
-
-      {isLoading && (
-        <p className="text-xs text-muted-foreground">Processing...</p>
-      )}
     </div>
   )
 }

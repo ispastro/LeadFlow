@@ -1,40 +1,61 @@
-export type LeadStatus = 'Drafting' | 'Awaiting Approval' | 'Syncing'
-export type TraceStepName = 'Input' | 'Enrichment' | 'Qualification' | 'Critic Feedback'
+// Re-export backend-aligned types from lib/api.ts as the canonical source
+export type { Lead, LeadMetadata, LeadsResponse, GraphStateResponse, AnalyticsResponse } from '@/lib/api'
+
+// ---------------------------------------------------------------------------
+// UI-only types (not directly from backend)
+// ---------------------------------------------------------------------------
+
+export type LeadStatus = 'Drafting' | 'Awaiting Approval' | 'Approved' | 'Rejected' | 'Manual Review' | 'Syncing'
+
 export type TraceStepStatus = 'completed' | 'in-progress' | 'pending'
 
+export type TraceStepName =
+  | 'input_node'
+  | 'enrichment_node'
+  | 'qualification_node'
+  | 'drafting_node'
+  | 'critic_node'
+  | 'hitl_node'
+  | 'deliver_node'
+  | 'manual_review_node'
+
 export interface TraceStep {
-  id: string
-  name: TraceStepName
-  timestamp: Date
+  name: TraceStepName | string
   status: TraceStepStatus
-  data: Record<string, any>
 }
 
-export interface EnrichmentData {
-  industry: string
-  revenue: string
-  employees: string
-  website?: string
-  linkedinUrl?: string
+// Derive display status from backend lead metadata
+export function deriveLeadStatus(metadata: import('@/lib/api').LeadMetadata): LeadStatus {
+  if (metadata.is_manual_review) return 'Manual Review'
+  if (metadata.requires_human_approval) {
+    if (metadata.human_approved === true)  return 'Approved'
+    if (metadata.human_approved === false) return 'Rejected'
+    return 'Awaiting Approval'
+  }
+  if (metadata.qualification_score == null) return 'Drafting'
+  return 'Syncing'
 }
 
-export interface Lead {
-  id: string
-  name: string
-  company: string
-  qualificationScore: number
-  status: LeadStatus
-  threadId: string
-  enrichmentData: EnrichmentData
-  timeline: TraceStep[]
-  draftEmail?: string
-  createdAt: Date
-  lastModified: Date
-}
+// Map backend current_node to ordered trace steps
+export const GRAPH_NODES: TraceStepName[] = [
+  'input_node',
+  'enrichment_node',
+  'qualification_node',
+  'drafting_node',
+  'critic_node',
+  'hitl_node',
+  'deliver_node',
+  'manual_review_node',
+]
 
-export interface GraphStateResponse {
-  threadId: string
-  lead: Lead
-  timeline: TraceStep[]
-  lastUpdate: Date
+export function deriveTraceSteps(currentNode: string | undefined): TraceStep[] {
+  const currentIndex = GRAPH_NODES.indexOf(currentNode as TraceStepName)
+  return GRAPH_NODES.map((name, i) => ({
+    name,
+    status:
+      currentIndex === -1 ? 'pending'
+      : i < currentIndex  ? 'completed'
+      : i === currentIndex ? 'in-progress'
+      : 'pending',
+  }))
 }

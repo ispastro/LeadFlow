@@ -2,87 +2,59 @@
 
 import { CheckCircle2, Clock, Circle } from 'lucide-react'
 import type { TraceStep } from '@/types/dashboard'
+import { cn } from '@/lib/utils'
 
 interface GraphTraceProps {
   steps: TraceStep[]
+  currentNode?: string
 }
 
-export function GraphTrace({ steps }: GraphTraceProps) {
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-green-400" />
-      case 'in-progress':
-        return <Clock className="h-5 w-5 animate-spin text-blue-400" />
-      case 'pending':
-        return <Circle className="h-5 w-5 text-muted-foreground" />
-      default:
-        return <Circle className="h-5 w-5 text-muted-foreground" />
-    }
-  }
+const NODE_LABELS: Record<string, string> = {
+  input_node:          'Input',
+  enrichment_node:     'Enrichment',
+  qualification_node:  'Qualification',
+  drafting_node:       'Drafting',
+  critic_node:         'Critic Review',
+  hitl_node:           'Human Approval',
+  deliver_node:        'Delivery',
+  manual_review_node:  'Manual Review',
+}
 
-  const getStepColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-500/20'
-      case 'in-progress':
-        return 'bg-blue-500/20'
-      case 'pending':
-        return 'bg-muted'
-      default:
-        return 'bg-muted'
-    }
-  }
-
-  const getLineColor = (currentIndex: number, nextStepStatus: string) => {
-    if (currentIndex === 0 && nextStepStatus === 'pending') {
-      return 'bg-muted'
-    }
-    return 'bg-gradient-to-b from-green-500/30 to-muted'
-  }
-
+export function GraphTrace({ steps, currentNode }: GraphTraceProps) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <h3 className="text-sm font-semibold text-foreground">Graph Trace</h3>
       <div className="relative space-y-2 pt-2">
         {steps.map((step, index) => {
-          const nextStep = steps[index + 1]
           const isLast = index === steps.length - 1
+          const label = NODE_LABELS[step.name] ?? step.name
 
           return (
-            <div key={step.id} className="relative">
-              {/* Timeline line */}
+            <div key={step.name} className="relative">
               {!isLast && (
-                <div
-                  className={cn(
-                    'absolute left-2.5 top-10 h-8 w-0.5',
-                    getLineColor(index, nextStep?.status || 'pending'),
-                  )}
-                />
+                <div className="absolute left-2.5 top-10 h-8 w-0.5 bg-border" />
               )}
-
-              {/* Step node */}
               <div className="flex gap-4">
-                <div className={cn('relative flex h-5 w-5 items-center justify-center rounded-full')}>
-                  {getStatusIcon(step.status)}
+                <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                  {step.status === 'completed'  && <CheckCircle2 className="h-5 w-5 text-green-400" />}
+                  {step.status === 'in-progress' && <Clock className="h-5 w-5 animate-spin text-blue-400" />}
+                  {step.status === 'pending'     && <Circle className="h-5 w-5 text-muted-foreground/40" />}
                 </div>
-
-                {/* Step content */}
                 <div className="flex-1 pb-2">
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-sm font-medium text-foreground">{step.name}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {step.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  <div className={cn(
+                    'rounded-lg p-3',
+                    step.status === 'completed'   ? 'bg-green-500/10'  : '',
+                    step.status === 'in-progress' ? 'bg-blue-500/10'   : '',
+                    step.status === 'pending'     ? 'bg-muted/30'      : '',
+                  )}>
+                    <p className={cn(
+                      'text-sm font-medium',
+                      step.status === 'completed'   ? 'text-foreground'         : '',
+                      step.status === 'in-progress' ? 'text-blue-400'           : '',
+                      step.status === 'pending'     ? 'text-muted-foreground'   : '',
+                    )}>
+                      {label}
                     </p>
-                    {Object.keys(step.data).length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {Object.entries(step.data).map(([key, value]) => (
-                          <p key={key} className="text-xs text-muted-foreground">
-                            <span className="font-mono text-xs text-foreground/70">{key}:</span> {String(value)}
-                          </p>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -92,8 +64,4 @@ export function GraphTrace({ steps }: GraphTraceProps) {
       </div>
     </div>
   )
-}
-
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ')
 }

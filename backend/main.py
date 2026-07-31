@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
     # 4. LangSmith
     logger.info(
         "LangSmith tracing: %s",
-        "ENABLED → " + settings.langchain_project if settings.langsmith_enabled else "DISABLED",
+        "ENABLED → " + settings.langsmith_project if settings.langsmith_enabled else "DISABLED",
     )
 
     # 5. LangGraph checkpointer (async SQLite — zero infra required locally)

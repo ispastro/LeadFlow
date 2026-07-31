@@ -44,8 +44,12 @@ def input_node(state: GraphState) -> GraphState:
 
         # Persist this user message immediately
         msg_db.create_message(conversation_id, "user", clean_message)
+        logger.info(
+            "input_node | session=%s conv=%s msgs=%d",
+            session_id, conversation_id, message_count,
+        )
     except Exception as exc:
-        logger.error("input_node | DB error session=%s: %s", session_id, exc)
+        logger.error("input_node | DB error session=%s: %s", session_id, exc, exc_info=True)
         return {
             **state,
             "user_message": clean_message,

@@ -21,8 +21,8 @@ def get_llm(
 ) -> ChatGroq:
     """
     Return a ChatGroq instance.
-    LangSmith tracing is enabled automatically when LANGCHAIN_TRACING_V2=true
-    and LANGCHAIN_API_KEY are present in the environment — no extra code needed.
+    LangSmith tracing is enabled automatically when LANGSMITH_TRACING=true
+    and LANGSMITH_API_KEY are present in the environment — no extra code needed.
     """
     return ChatGroq(
         model=model,

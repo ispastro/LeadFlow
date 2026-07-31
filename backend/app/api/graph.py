@@ -91,7 +91,7 @@ async def graph_invoke(request: GraphInvokeRequest):
         final_state = await graph.ainvoke(initial_state, config)
     except Exception as exc:
         logger.error("graph_invoke | unhandled error session=%s: %s", request.session_id, exc, exc_info=True)
-        raise HTTPException(status_code=500, detail="Graph execution failed.")
+        raise HTTPException(status_code=500, detail=f"Graph execution failed: {exc}")
 
     elapsed = (time.time() - start) * 1000
 

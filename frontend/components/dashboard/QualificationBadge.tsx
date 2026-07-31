@@ -1,26 +1,29 @@
 import { cn } from '@/lib/utils'
 
 interface QualificationBadgeProps {
-  score: number
+  score?: number | null
   className?: string
 }
 
 export function QualificationBadge({ score, className }: QualificationBadgeProps) {
-  let bgColor = 'bg-red-500/20 text-red-400'
-  let label = 'Low'
-
-  if (score >= 86) {
-    bgColor = 'bg-green-500/20 text-green-400'
-    label = 'High'
-  } else if (score >= 51) {
-    bgColor = 'bg-amber-500/20 text-amber-400'
-    label = 'Medium'
+  if (score == null) {
+    return <span className="text-xs text-muted-foreground">—</span>
   }
 
+  const config =
+    score >= 90 ? { bg: 'bg-red-500/20 text-red-400',    label: 'Critical' } :
+    score >= 70 ? { bg: 'bg-green-500/20 text-green-400', label: 'High' }    :
+    score >= 50 ? { bg: 'bg-amber-500/20 text-amber-400', label: 'Medium' }  :
+                  { bg: 'bg-muted text-muted-foreground', label: 'Low' }
+
   return (
-    <div className={cn('inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium', bgColor, className)}>
-      <div className="flex h-2 w-2 rounded-full bg-current" />
-      {score}% · {label}
+    <div className={cn(
+      'inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium',
+      config.bg,
+      className,
+    )}>
+      <div className="h-1.5 w-1.5 rounded-full bg-current" />
+      {score} · {config.label}
     </div>
   )
 }
