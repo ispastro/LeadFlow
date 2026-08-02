@@ -212,3 +212,43 @@ export function useHealth() {
     retry: false,
   })
 }
+
+// ---------------------------------------------------------------------------
+// Ingestion
+// ---------------------------------------------------------------------------
+
+export const ingestKeys = {
+  status: ['ingest', 'status'] as const,
+}
+
+export function useIngestStatus() {
+  return useQuery({
+    queryKey: ingestKeys.status,
+    queryFn: api.fetchIngestStatus,
+    staleTime: 60_000,
+    retry: false,
+  })
+}
+
+export function useIngestFile() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ file, title, category }: { file: File; title?: string; category?: string }) =>
+      api.ingestFile(file, title, category),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ingestKeys.status })
+      qc.invalidateQueries({ queryKey: keys.knowledge })
+    },
+  })
+}
+
+export function useIngestText() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: api.ingestText,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ingestKeys.status })
+      qc.invalidateQueries({ queryKey: keys.knowledge })
+    },
+  })
+}

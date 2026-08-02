@@ -301,6 +301,62 @@ export async function deleteKnowledge(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Ingestion
+// ---------------------------------------------------------------------------
+
+export interface IngestResponse {
+  document_id: string
+  title: string
+  category: string
+  chunks_indexed: number
+  total_vectors: number
+  message: string
+}
+
+export interface IngestStatusResponse {
+  collection: string
+  total_vectors: number
+  vector_size: number
+  status: string
+}
+
+export async function fetchIngestStatus(): Promise<IngestStatusResponse> {
+  return request<IngestStatusResponse>('/api/ingest/status')
+}
+
+export async function ingestFile(file: File, title?: string, category?: string): Promise<IngestResponse> {
+  const form = new FormData()
+  form.append('file', file)
+  if (title) form.append('title', title)
+  if (category) form.append('category', category)
+
+  const token = getToken()
+  const res = await fetch(`${BASE_URL}/api/ingest/file`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  })
+
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: res.statusText }))
+    throw new ApiError(res.status, detail?.detail ?? `Upload failed: ${res.status}`)
+  }
+  return res.json()
+}
+
+export async function ingestText(payload: {
+  title: string
+  content: string
+  category?: string
+  source?: string
+}): Promise<IngestResponse> {
+  return request<IngestResponse>('/api/ingest/text', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Health
 // ---------------------------------------------------------------------------
 
