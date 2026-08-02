@@ -169,6 +169,8 @@ export interface GraphStateResponse {
   critic_revision_count: number
   requires_human_approval: boolean
   human_approved?: boolean | null
+  human_reviewer?: string
+  human_notes?: string
   is_manual_review: boolean
   error?: string
 }
@@ -360,7 +362,23 @@ export async function ingestText(payload: {
 // Health
 // ---------------------------------------------------------------------------
 
-export async function fetchHealth(): Promise<{ status: string; service: string }> {
+export async function fetchHealth(): Promise<{ status: string; service: string; timestamp?: string }> {
   const res = await fetch(`${BASE_URL}/health`)
+  return res.json()
+}
+
+// ---------------------------------------------------------------------------
+// Root endpoint (service info + version)
+// ---------------------------------------------------------------------------
+
+export interface ServiceInfo {
+  service: string
+  version: string
+  status: string
+  graph_endpoint: string
+}
+
+export async function fetchServiceInfo(): Promise<ServiceInfo> {
+  const res = await fetch(`${BASE_URL}/`)
   return res.json()
 }

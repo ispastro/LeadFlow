@@ -213,6 +213,15 @@ export function useHealth() {
   })
 }
 
+export function useServiceInfo() {
+  return useQuery({
+    queryKey: ['service-info'] as const,
+    queryFn: api.fetchServiceInfo,
+    staleTime: 5 * 60_000,
+    retry: false,
+  })
+}
+
 // ---------------------------------------------------------------------------
 // Ingestion
 // ---------------------------------------------------------------------------

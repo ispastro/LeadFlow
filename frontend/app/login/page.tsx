@@ -29,7 +29,7 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: 'admin@leadflow.com', password: '' },
+    defaultValues: { email: '', password: '' },
   })
 
   // Already signed in — skip the login screen.
@@ -154,7 +154,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-xs text-muted-foreground">
-          Demo admin: use the credentials from your backend <code className="text-foreground/80">.env</code>
+          Sign in with the admin credentials from your backend <code className="text-foreground/80">.env</code>
         </p>
       </div>
     </div>

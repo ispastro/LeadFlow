@@ -21,7 +21,7 @@ async def get_conversation(conversation_id: str, _: dict = Depends(get_current_u
             raise HTTPException(status_code=404, detail="Conversation not found")
 
         conversation = dict(row)
-        messages = msg_db.get_conversation_history(conversation_id, limit=100)
+        messages = msg_db.get_conversation_messages(conversation_id)
         return {"conversation": conversation, "messages": messages}
 
     except HTTPException:
